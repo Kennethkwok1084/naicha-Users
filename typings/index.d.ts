@@ -2,7 +2,10 @@
 
 interface IAppOption {
   globalData: {
-    userInfo?: WechatMiniprogram.UserInfo,
-  }
-  userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback,
+    userInfo?: WechatMiniprogram.UserInfo;
+    theme: 'default' | 'elder';
+  };
+  userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback;
+  checkUpdate: () => void;
+  initTheme: () => void;
 }

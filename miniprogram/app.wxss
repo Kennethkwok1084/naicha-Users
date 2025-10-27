@@ -1,4 +1,58 @@
 /**app.wxss**/
+
+/* 全局 CSS 变量 - 默认主题 */
+page {
+  /* 颜色 */
+  --color-primary: #07c160;
+  --color-secondary: #10aeff;
+  --color-text: #333333;
+  --color-text-secondary: #999999;
+  --color-background: #f5f5f5;
+  --color-white: #ffffff;
+  --color-border: #e5e5e5;
+  --color-error: #fa5151;
+  --color-warning: #ffc300;
+  --color-success: #07c160;
+
+  /* 字号 */
+  --font-size-xs: 24rpx;
+  --font-size-sm: 28rpx;
+  --font-size-md: 32rpx;
+  --font-size-lg: 36rpx;
+  --font-size-xl: 40rpx;
+  --font-size-xxl: 48rpx;
+
+  /* 间距 */
+  --spacing-xs: 8rpx;
+  --spacing-sm: 16rpx;
+  --spacing-md: 24rpx;
+  --spacing-lg: 32rpx;
+  --spacing-xl: 48rpx;
+
+  /* 圆角 */
+  --border-radius-sm: 8rpx;
+  --border-radius-md: 16rpx;
+  --border-radius-lg: 24rpx;
+  --border-radius-round: 999rpx;
+
+  /* 基础样式 */
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+}
+
+/* 适老化主题覆盖 */
+page.theme-elder {
+  --font-size-xs: 28rpx;
+  --font-size-sm: 32rpx;
+  --font-size-md: 40rpx;
+  --font-size-lg: 44rpx;
+  --font-size-xl: 48rpx;
+  --font-size-xxl: 56rpx;
+  --color-text: #000000;
+}
+
+/* 通用容器 */
 .container {
   height: 100%;
   display: flex;
@@ -7,4 +61,19 @@
   justify-content: space-between;
   padding: 200rpx 0;
   box-sizing: border-box;
-} 
+}
+
+/* 通用按钮样式 */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--border-radius-md);
+}
+
+.btn-secondary {
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  border: 2rpx solid var(--color-primary);
+  border-radius: var(--border-radius-md);
+}
+ 

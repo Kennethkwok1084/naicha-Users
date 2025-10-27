@@ -17,8 +17,14 @@
     "strict": true,
     "strictPropertyInitialization": true,
     "lib": ["ES2020"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["miniprogram/*"]
+    },
+    "types": ["miniprogram-api-typings"],
     "typeRoots": [
-      "./typings"
+      "./typings",
+      "./node_modules/@types"
     ]
   },
   "include": [

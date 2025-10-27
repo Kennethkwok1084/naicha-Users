@@ -1,15 +1,32 @@
 {
   "name": "miniprogram-ts-less-quickstart",
   "version": "1.0.0",
-  "description": "",
-  "scripts": {
-  },
+  "description": "[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)\r [![WeChat Mini Program](https://img.shields.io/badge/WeChat-Mini%20Program-07c160.svg)](https://developers.weixin.qq.com/miniprogram/dev/framework/)\r [![License](https://img.shields.io/badge/license-Private-red.svg)]()",
+  "scripts": {},
   "keywords": [],
   "author": "",
-  "license": "",
-  "dependencies": {
-  },
+  "license": "ISC",
   "devDependencies": {
-    "miniprogram-api-typings": "^2.8.3-1"
+    "@types/uuid": "^10.0.0",
+    "miniprogram-api-typings": "^4.1.0"
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kennethkwok1084/naicha-Users.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kennethkwok1084/naicha-Users/issues"
+  },
+  "homepage": "https://github.com/Kennethkwok1084/naicha-Users#readme",
+  "dependencies": {
+    "@vant/weapp": "^1.11.7",
+    "mobx-miniprogram": "^6.12.3",
+    "mobx-miniprogram-bindings": "^5.1.1",
+    "uuid": "^13.0.0",
+    "zod": "^4.1.12"
   }
 }
