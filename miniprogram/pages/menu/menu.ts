@@ -1,22 +1,21 @@
 // pages/menu/menu.ts
 import { createStoreBindings } from 'mobx-miniprogram-bindings'
 import { menuStore, shopStore } from '../../stores/index'
-import { Product } from '../../api/menu'
+import { MenuProduct, MenuCategory } from '../../api/menu'
+import { SOLDOUT_STYLE } from '../../config/index'
 
 Component({
   data: {
     // 店铺状态
     shopIsOpen: true,
-    shopAnnouncement: '',
     
     // 菜单数据
-    categories: [] as any[],
-    products: [] as Product[],
+    categories: [] as MenuCategory[],
     activeCategory: 0,
-    currentProducts: [] as Product[],
+    currentProducts: [] as MenuProduct[],
     
-    // 售罄商品显示策略: 'hide' | 'disabled'
-    soldOutStyle: 'disabled' as 'hide' | 'disabled',
+    // 售罄商品显示策略
+    soldOutStyle: SOLDOUT_STYLE,
     
     // 加载状态
     loading: true
@@ -56,8 +55,7 @@ Component({
       this.storeBindings = createStoreBindings(this, {
         store: shopStore,
         fields: {
-          shopIsOpen: 'isOpen',
-          shopAnnouncement: 'announcement'
+          shopIsOpen: 'isOpen'
         },
         actions: []
       })
@@ -75,14 +73,12 @@ Component({
         ])
 
         const categories = menuStore.categories
-        const products = menuStore.products
 
         // 设置默认选中第一个分类
-        const activeCategory = categories.length > 0 ? categories[0].id : 0
+        const activeCategory = categories.length > 0 ? categories[0].category_id : 0
 
         this.setData({
           categories,
-          products,
           activeCategory,
           loading: false
         })
@@ -110,16 +106,14 @@ Component({
 
     // 更新当前分类的商品列表
     updateCurrentProducts(this: any) {
-      const { activeCategory, products, soldOutStyle } = this.data
+      const { activeCategory, soldOutStyle } = this.data
       
-      let currentProducts = products.filter(
-        (p: Product) => p.category_id === activeCategory
-      )
+      let currentProducts = menuStore.getProductsByCategoryId(activeCategory)
 
       // 根据售罄策略处理
       if (soldOutStyle === 'hide') {
         // 隐藏售罄商品
-        currentProducts = currentProducts.filter((p: Product) => p.is_available)
+        currentProducts = currentProducts.filter((p: MenuProduct) => p.inventory_status === 'available')
       }
 
       this.setData({
@@ -135,7 +129,7 @@ Component({
         return
       }
 
-      // TODO: 跳转到商品详情页
+      // TODO: 跳转到商品详情页 (M2)
       wx.navigateTo({
         url: `/pages/product-detail/product-detail?id=${productid}`
       })
@@ -150,8 +144,7 @@ Component({
         ])
         
         this.setData({
-          categories: menuStore.categories,
-          products: menuStore.products
+          categories: menuStore.categories
         })
         
         this.updateCurrentProducts()

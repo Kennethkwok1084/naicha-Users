@@ -7,7 +7,7 @@
   <van-notice-bar 
     wx:if="{{!shopIsOpen}}"
     left-icon="warning-o"
-    text="{{shopAnnouncement || '店铺休息中,暂不接单'}}"
+    text="店铺休息中,暂不接单"
     color="#ed6a0c"
     background="#fffbe8"
   />
@@ -27,9 +27,9 @@
       >
         <van-sidebar-item 
           wx:for="{{categories}}" 
-          wx:key="id"
+          wx:key="category_id"
           title="{{item.name}}"
-          name="{{item.id}}"
+          name="{{item.category_id}}"
         />
       </van-sidebar>
     </view>
@@ -48,16 +48,16 @@
       <view wx:else class="menu-page__products-list">
         <view 
           wx:for="{{currentProducts}}" 
-          wx:key="id"
+          wx:key="product_id"
           class="menu-page__product-item"
         >
           <product-card
-            product-id="{{item.id}}"
+            product-id="{{item.product_id}}"
             name="{{item.name}}"
             description="{{item.description}}"
             price="{{item.base_price}}"
             image-url="{{item.image_url}}"
-            sold-out="{{!item.is_available}}"
+            sold-out="{{item.inventory_status === 'sold_out'}}"
             bind:tap="onProductTap"
           />
         </view>

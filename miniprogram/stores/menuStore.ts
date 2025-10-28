@@ -1,33 +1,37 @@
 // stores/menuStore.ts - 菜单数据管理
 import { observable, action } from 'mobx-miniprogram'
-import { getMenu, MenuCategory, Product } from '../api/menu'
+import { getMenu, MenuCategory, MenuProduct } from '../api/menu'
+import { CACHE_EXPIRE_TIME } from '../config/index'
 
 export const menuStore = observable({
   // 状态
   categories: [] as MenuCategory[],
-  products: [] as Product[],
+  uncategorizedProducts: [] as MenuProduct[],
+  multiCategoryEnabled: false,
   loading: false,
   lastFetchTime: 0,
 
-  // 获取按分类分组的商品
-  getProductsByCategory(): Map<number, Product[]> {
-    const map = new Map<number, Product[]>()
+  // 获取所有商品(展平)
+  getAllProducts(): MenuProduct[] {
+    const products: MenuProduct[] = []
     this.categories.forEach((cat: MenuCategory) => {
-      map.set(cat.id, [])
+      products.push(...cat.products)
     })
-    this.products.forEach((product: Product) => {
-      const list = map.get(product.category_id) || []
-      list.push(product)
-      map.set(product.category_id, list)
-    })
-    return map
+    products.push(...this.uncategorizedProducts)
+    return products
+  },
+
+  // 根据分类ID获取商品
+  getProductsByCategoryId(categoryId: number): MenuProduct[] {
+    const category = this.categories.find((c: MenuCategory) => c.category_id === categoryId)
+    return category ? category.products : []
   },
 
   // Actions
   fetchMenu: action(async function(this: any, forceRefresh = false) {
-    // 缓存 10 分钟
+    // 使用配置的缓存时间
     const now = Date.now()
-    if (!forceRefresh && this.lastFetchTime && (now - this.lastFetchTime) < 10 * 60 * 1000) {
+    if (!forceRefresh && this.lastFetchTime && (now - this.lastFetchTime) < CACHE_EXPIRE_TIME.menu) {
       return
     }
 
@@ -35,7 +39,8 @@ export const menuStore = observable({
     try {
       const menuData = await getMenu()
       this.categories = menuData.categories.sort((a, b) => a.sort_order - b.sort_order)
-      this.products = menuData.products.sort((a, b) => a.sort_order - b.sort_order)
+      this.uncategorizedProducts = menuData.uncategorized_products
+      this.multiCategoryEnabled = menuData.multi_category_enabled
       this.lastFetchTime = now
     } catch (error) {
       console.error('获取菜单失败:', error)
@@ -46,7 +51,8 @@ export const menuStore = observable({
   }),
 
   // 根据ID获取商品
-  getProductById: action(function(this: any, productId: number): Product | undefined {
-    return this.products.find((p: Product) => p.id === productId)
+  getProductById: action(function(this: any, productId: number): MenuProduct | undefined {
+    const allProducts = this.getAllProducts()
+    return allProducts.find((p: MenuProduct) => p.product_id === productId)
   })
 })

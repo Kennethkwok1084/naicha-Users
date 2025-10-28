@@ -1,12 +1,7 @@
 // utils/request.ts
 import { z } from 'zod';
 import { getStorage } from './storage';
-
-/**
- * API 基础地址
- * TODO: 根据环境配置
- */
-const BASE_URL = 'https://your-api-domain.com';
+import { API_BASE_URL, REQUEST_TIMEOUT, DEBUG } from '../config/index';
 
 /**
  * 后端统一响应格式 Schema
@@ -51,12 +46,17 @@ export function request<T = any>(options: RequestOptions): Promise<ApiResponse<T
       method = 'GET',
       data,
       header = {},
-      timeout = 30000,
+      timeout = REQUEST_TIMEOUT,
       needAuth = true
     } = options;
 
     // 构建完整 URL
-    const fullUrl = url.startsWith('http') ? url : `${BASE_URL}${url}`;
+    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+
+    // 调试日志
+    if (DEBUG) {
+      console.log(`[Request] ${method} ${fullUrl}`, data);
+    }
 
     // 构建请求头
     const headers: Record<string, string> = {

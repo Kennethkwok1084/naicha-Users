@@ -1,28 +1,56 @@
-// api/shop.ts - 店铺相关 API
+// api/shop.ts - 店铺相关 API (基于 OpenAPI 规范)
 import { request } from '../utils/request'
+
+/**
+ * 店铺位置
+ */
+export interface ShopLocation {
+  lat: number
+  lng: number
+}
+
+/**
+ * 店铺功能开关
+ */
+export interface ShopFeatures {
+  multi_category_enabled: boolean
+  reservation_enabled: boolean
+  want_enabled: boolean
+}
+
+/**
+ * 店铺营业时间
+ */
+export interface ShopOpenHours {
+  [day: string]: string // 例如: "monday": "09:00-22:00"
+}
 
 /**
  * 店铺状态
  */
 export interface ShopStatus {
   is_open: boolean
-  business_hours: string
-  announcement?: string
-  features: {
-    pickup_enabled: boolean
-    delivery_enabled: boolean
-    dine_in_enabled: boolean
-  }
+  delivery_radius_m: number
+  timezone: string
+  open_hours?: ShopOpenHours
+  location?: ShopLocation
+  features: ShopFeatures
+}
+
+/**
+ * 配送范围检查请求
+ */
+export interface DeliveryCheckRequest {
+  lat: number
+  lng: number
 }
 
 /**
  * 配送范围检查结果
  */
-export interface DeliveryCheckResult {
-  in_range: boolean
-  distance?: number
-  delivery_fee?: number
-  estimated_time?: number
+export interface DeliveryCheckResponse {
+  deliverable: boolean
+  distance_m: number
 }
 
 /**
@@ -45,13 +73,13 @@ export async function getShopStatus(): Promise<ShopStatus> {
 export async function checkDeliveryRange(
   latitude: number,
   longitude: number
-): Promise<DeliveryCheckResult> {
-  const response = await request<DeliveryCheckResult>({
+): Promise<DeliveryCheckResponse> {
+  const response = await request<DeliveryCheckResponse>({
     url: '/api/v1/shop/delivery/check',
     method: 'POST',
     data: {
-      latitude,
-      longitude
+      lat: latitude,
+      lng: longitude
     },
     needAuth: false
   })

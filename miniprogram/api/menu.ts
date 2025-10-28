@@ -1,67 +1,69 @@
-// api/menu.ts - 菜单相关 API
+// api/menu.ts - 菜单相关 API (基于 OpenAPI 规范)
 import { request } from '../utils/request'
 
 /**
  * 菜单分类
  */
 export interface MenuCategory {
-  id: number
+  category_id: number
   name: string
   sort_order: number
-  icon?: string
+  products: MenuProduct[]
 }
 
 /**
  * 商品规格组
  */
-export interface SpecGroup {
-  id: number
+export interface MenuSpecGroup {
+  group_id: number
   name: string
-  required: boolean
-  options: SpecOption[]
+  sort_order: number
+  options: MenuSpecOption[]
 }
 
 /**
  * 商品规格选项
  */
-export interface SpecOption {
-  id: number
+export interface MenuSpecOption {
+  option_id: number
   name: string
   price_modifier: number
-  is_available: boolean
+  inventory_status: 'available' | 'sold_out'
+  sort_order: number
 }
 
 /**
  * 商品信息
  */
-export interface Product {
-  id: number
+export interface MenuProduct {
+  product_id: number
   name: string
-  description: string
+  description: string | null
+  image_url: string | null
   base_price: number
-  image_url?: string
-  category_id: number
-  is_available: boolean
-  spec_groups: SpecGroup[]
-  sort_order: number
+  status: string
+  inventory_status: 'available' | 'sold_out'
+  spec_groups: MenuSpecGroup[]
 }
 
 /**
- * 菜单数据
+ * 菜单响应数据
  */
-export interface MenuData {
+export interface MenuResponse {
   categories: MenuCategory[]
-  products: Product[]
+  uncategorized_products: MenuProduct[]
+  multi_category_enabled: boolean
 }
 
 /**
  * 获取菜单数据
  * GET /api/v1/menu
  */
-export async function getMenu(): Promise<MenuData> {
-  const response = await request<MenuData>({
+export async function getMenu(): Promise<MenuResponse> {
+  const response = await request<MenuResponse>({
     url: '/api/v1/menu',
-    method: 'GET'
+    method: 'GET',
+    needAuth: false // 菜单数据不需要认证
   })
   return response.data!
 }

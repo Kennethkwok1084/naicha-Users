@@ -45,11 +45,21 @@ Component({
       value: true,
       observer: '_showChange'
     },
-    // back为true的时候，返回的页面深度
+    // back为true的时候,返回的页面深度
     delta: {
       type: Number,
       value: 1
     },
+    // 是否显示底部阴影
+    shadow: {
+      type: Boolean,
+      value: false
+    },
+    // 透明度 0-1
+    opacity: {
+      type: Number,
+      value: 1
+    }
   },
   /**
    * 组件的初始数据
@@ -59,12 +69,13 @@ Component({
   },
   lifetimes: {
     attached() {
+      const that = this as any
       const rect = wx.getMenuButtonBoundingClientRect()
       wx.getSystemInfo({
         success: (res) => {
           const isAndroid = res.platform === 'android'
           const isDevtools = res.platform === 'devtools'
-          this.setData({
+          that.setData({
             ios: !isAndroid,
             innerPaddingRight: `padding-right: ${res.windowWidth - rect.left}px`,
             leftWidth: `width: ${res.windowWidth - rect.left }px`,
@@ -79,7 +90,8 @@ Component({
    */
   methods: {
     _showChange(show: boolean) {
-      const animated = this.data.animated
+      const that = this as any
+      const animated = that.data.animated
       let displayStyle = ''
       if (animated) {
         displayStyle = `opacity: ${
@@ -88,18 +100,19 @@ Component({
       } else {
         displayStyle = `display: ${show ? '' : 'none'}`
       }
-      this.setData({
+      that.setData({
         displayStyle
       })
     },
     back() {
-      const data = this.data
+      const that = this as any
+      const data = that.data
       if (data.delta) {
         wx.navigateBack({
           delta: data.delta
         })
       }
-      this.triggerEvent('back', { delta: data.delta }, {})
+      that.triggerEvent('back', { delta: data.delta }, {})
     }
   },
 })

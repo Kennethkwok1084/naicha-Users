@@ -1,4 +1,5 @@
 /**app.wxss**/
+@import 'miniprogram_npm/tdesign-miniprogram/common/style/index.wxss';
 
 /* 全局 CSS 变量 - 默认主题 */
 page {
@@ -39,6 +40,14 @@ page {
   background-color: var(--color-background);
   color: var(--color-text);
   font-size: var(--font-size-md);
+  
+  /* TDesign 主题变量覆盖 */
+  --td-brand-color: #667eea;
+  --td-brand-color-hover: #764ba2;
+  --td-tab-bar-bg: rgba(255, 255, 255, 0.9);
+  --td-tab-bar-color: #666666;
+  --td-tab-bar-active-color: #ffffff;
+  --td-tab-bar-active-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 /* 适老化主题覆盖 */

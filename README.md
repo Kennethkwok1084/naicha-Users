@@ -6,13 +6,13 @@
 [![WeChat Mini Program](https://img.shields.io/badge/WeChat-Mini%20Program-07c160.svg)](https://developers.weixin.qq.com/miniprogram/dev/framework/)
 [![License](https://img.shields.io/badge/license-Private-red.svg)]()
 
-> 原生微信小程序 + TypeScript + MobX + Vant Weapp 实现的智能奶茶档口顾客端应用
+> 原生微信小程序 + TypeScript + MobX + TDesign 实现的智能奶茶档口顾客端应用
 
 ---
 
 ## 📖 项目简介
 
-这是"智能奶茶档口系统"的**顾客端小程序**，为顾客提供便捷的在线点单、支付（预留接口）、订单查询等服务。采用原生微信小程序框架 + TypeScript 构建，集成 MobX 进行状态管理，选用 Vant Weapp 作为 UI 组件库，并支持手动切换适老化主题。
+这是"智能奶茶档口系统"的**顾客端小程序**,为顾客提供便捷的在线点单、支付(预留接口)、订单查询等服务。采用原生微信小程序框架 + TypeScript 构建,集成 MobX 进行状态管理,选用 TDesign 作为 UI 组件库,并支持手动切换适老化主题。
 
 ### 核心功能 (MVP V1.0)
 
@@ -43,7 +43,7 @@
 | 原生微信小程序   | -    | 框架基础       |
 | TypeScript       | 5.0+ | 类型安全       |
 | MobX             | 6.x  | 状态管理       |
-| Vant Weapp       | 1.x  | UI 组件库      |
+| TDesign          | 1.x  | UI 组件库      |
 | zod              | 3.x  | 运行时类型校验 |
 
 ---
@@ -74,8 +74,8 @@
     - 在 `miniprogram/utils/request.ts` (或其他配置文件) 中设置 `BASE_URL` 为你的后端 API 地址。
     - (可选) 配置 `project.private.config.json` 覆盖公共配置。
 4.  **构建 npm**
-    - 在微信开发者工具中：**工具** → **构建 npm**。
-    - 确保 `project.config.json` 中已配置 `"packNpmManually": true` 和 `packNpmRelationList` (指向 `package.json` 和 `miniprogram/` 或根目录，取决于 Vant Weapp 安装位置)。
+    - 在微信开发者工具中:**工具** → **构建 npm**。
+    - 确保 `project.config.json` 中已配置 `"packNpmManually": true` 和 `packNpmRelationList` (指向 `package.json` 和 `miniprogram/` 或根目录,取决于 TDesign 安装位置)。
 5.  **编译预览**
     - 使用微信开发者工具，选择项目根目录。
     - 点击 **编译** 按钮。
@@ -124,7 +124,7 @@
 │   │   ├── tokens.json       \# 设计 Tokens
 │   │   ├── app.wxss          \# 默认主题 (基于 tokens 生成)
 │   │   └── app-elder.wxss    \# 适老化主题 (基于 tokens 生成)
-│   │   └── vant-custom.wxss  \# Vant 样式覆盖
+│   │   └── tdesign-custom.wxss  \# TDesign 样式覆盖
 │   ├── images/               \# 本地图片资源
 │   ├── app.ts                \# 小程序入口
 │   ├── app.json              \# 全局配置

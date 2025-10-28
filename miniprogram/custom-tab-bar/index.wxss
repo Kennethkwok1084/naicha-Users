@@ -1,0 +1,51 @@
+/* custom-tab-bar/index.wxss */
+
+/* 悬浮胶囊样式 - 直接在组件根元素上 */
+:host {
+  position: fixed !important;
+  bottom: 32rpx !important;
+  left: 32rpx !important;
+  right: 32rpx !important;
+  width: auto !important;
+  z-index: 9999 !important;
+}
+
+.t-tab-bar {
+  position: relative !important;
+  border-radius: 48rpx !important;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12) !important;
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  background: rgba(255, 255, 255, 0.9) !important;
+  padding: 16rpx 24rpx !important;
+  width: 100% !important;
+}
+
+/* 图标在上,文字在下 */
+.t-tab-bar-item {
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 8rpx 16rpx !important;
+}
+
+.t-tab-bar-item__icon {
+  margin-bottom: 8rpx !important;
+  font-size: 44rpx !important;
+}
+
+.t-tab-bar-item__text {
+  font-size: 24rpx !important;
+  margin-left: 0 !important;
+}
+
+/* 选中状态 */
+.t-tab-bar-item--active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border-radius: 32rpx !important;
+}
+
+.t-tab-bar-item--active .t-tab-bar-item__icon,
+.t-tab-bar-item--active .t-tab-bar-item__text {
+  color: white !important;
+}

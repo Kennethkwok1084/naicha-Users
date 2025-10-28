@@ -1,28 +1,117 @@
 <!--index.wxml-->
-<navigation-bar title="Weixin" back="{{false}}" color="black" background="#FFF"></navigation-bar>
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="userinfo">
-      <block wx:if="{{canIUseNicknameComp && !hasUserInfo}}">
-        <button class="avatar-wrapper" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-          <image class="avatar" src="{{userInfo.avatarUrl}}"></image>
-        </button>
-        <view class="nickname-wrapper">
-          <text class="nickname-label">昵称</text>
-          <input type="nickname" class="nickname-input" placeholder="请输入昵称" bind:change="onInputChange" />
+<view class="page-container">
+  <!-- 悬浮透明导航栏,带模糊背景 -->
+  <navigation-bar 
+    title="首页" 
+    back="{{false}}" 
+    color="#333333" 
+    background="transparent"
+    opacity="{{1}}"
+  ></navigation-bar>
+  
+  <scroll-view class="scrollarea" scroll-y type="list">
+    <view class="home-container">
+      
+      <!-- 轮播图 -->
+      <view class="banner-section">
+        <swiper 
+          class="banner-swiper" 
+          indicator-dots="{{true}}" 
+          autoplay="{{true}}" 
+          interval="{{3000}}" 
+          duration="{{500}}"
+          circular="{{true}}"
+        >
+          <swiper-item wx:for="{{banners}}" wx:key="id">
+            <image class="banner-image" src="{{item.image_url}}" mode="aspectFill" bindtap="onBannerTap" data-link="{{item.link}}" />
+          </swiper-item>
+        </swiper>
+      </view>
+
+    <!-- 功能区 -->
+    <view class="function-section">
+      <view 
+        class="function-item" 
+        wx:for="{{functions}}" 
+        wx:key="id"
+        bindtap="onFunctionTap"
+        data-path="{{item.path}}"
+        data-type="{{item.type}}"
+      >
+        <text class="function-icon-emoji">{{item.icon}}</text>
+        <text class="function-name">{{item.name}}</text>
+      </view>
+    </view>
+
+    <!-- 广告轮播 -->
+    <view class="ad-section" wx:if="{{ads.length > 0}}">
+      <swiper 
+        class="ad-swiper" 
+        indicator-dots="{{true}}" 
+        autoplay="{{true}}" 
+        interval="{{4000}}"
+        circular="{{true}}"
+      >
+        <swiper-item wx:for="{{ads}}" wx:key="id">
+          <image class="ad-image" src="{{item.image_url}}" mode="aspectFill" bindtap="onAdTap" data-link="{{item.link}}" />
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <!-- 集杯卡 -->
+    <view class="loyalty-card-section" wx:if="{{loyaltyCard}}">
+      <view class="loyalty-card">
+        <view class="card-header">
+          <text class="card-title">集杯卡</text>
+          <text class="card-subtitle">集满{{loyaltyCard.reward_threshold}}杯可兑换</text>
         </view>
-      </block>
-      <block wx:elif="{{!hasUserInfo}}">
-        <button wx:if="{{canIUseGetUserProfile}}" bindtap="getUserProfile"> 获取头像昵称 </button>
-        <view wx:else> 请使用2.10.4及以上版本基础库 </view>
-      </block>
-      <block wx:else>
-        <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" mode="cover"></image>
-        <text class="userinfo-nickname">{{userInfo.nickName}}</text>
-      </block>
+        <view class="cup-progress">
+          <view class="cup-item" wx:for="{{loyaltyCard.reward_threshold}}" wx:key="index">
+            <text class="cup-icon {{index < loyaltyCard.current_cups ? 'filled' : 'empty'}}">
+              {{index < loyaltyCard.current_cups ? '🥤' : '⚪'}}
+            </text>
+          </view>
+        </view>
+        <view class="card-footer">
+          <text class="cup-count">已集 {{loyaltyCard.current_cups}}/{{loyaltyCard.reward_threshold}} 杯</text>
+          <button 
+            class="redeem-btn {{loyaltyCard.is_redeemable ? 'active' : 'disabled'}}" 
+            bindtap="onRedeemTap"
+            disabled="{{!loyaltyCard.is_redeemable}}"
+          >
+            {{loyaltyCard.is_redeemable ? '立即兑换' : '继续努力'}}
+          </button>
+        </view>
+      </view>
     </view>
-    <view class="usermotto">
-      <text class="user-motto">{{motto}}</text>
+
+    <!-- 店铺情况 -->
+    <view class="shop-info-section">
+      <view class="shop-info-card">
+        <view class="shop-header">
+          <text class="shop-name">{{shopInfo.name}}</text>
+          <view class="shop-status {{shopInfo.status}}">
+            <text class="status-dot"></text>
+            <text class="status-text">{{shopInfo.status === 'open' ? '营业中' : '已打烊'}}</text>
+          </view>
+        </view>
+        <view class="shop-details">
+          <view class="detail-item">
+            <text class="detail-icon">📍</text>
+            <text class="detail-text">{{shopInfo.address}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-icon">📞</text>
+            <text class="detail-text">{{shopInfo.phone}}</text>
+          </view>
+          <view class="detail-item">
+            <text class="detail-icon">🕐</text>
+            <text class="detail-text">{{shopInfo.business_hours}}</text>
+          </view>
+        </view>
+      </view>
     </view>
+
   </view>
 </scroll-view>
+</view>

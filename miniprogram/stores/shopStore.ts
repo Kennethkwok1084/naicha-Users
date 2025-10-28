@@ -1,25 +1,28 @@
 // stores/shopStore.ts - 店铺状态管理
 import { observable, action } from 'mobx-miniprogram'
-import { getShopStatus, ShopStatus } from '../api/shop'
+import { getShopStatus, ShopStatus, ShopFeatures } from '../api/shop'
+import { CACHE_EXPIRE_TIME } from '../config/index'
 
 export const shopStore = observable({
   // 状态
   isOpen: true,
-  businessHours: '',
-  announcement: '',
+  deliveryRadius: 0,
+  timezone: 'Asia/Shanghai',
+  openHours: {} as any,
+  location: null as any,
   features: {
-    pickup_enabled: true,
-    delivery_enabled: true,
-    dine_in_enabled: true
-  },
+    multi_category_enabled: false,
+    reservation_enabled: false,
+    want_enabled: false
+  } as ShopFeatures,
   loading: false,
   lastFetchTime: 0,
 
   // Actions
   fetchShopStatus: action(async function(this: any, forceRefresh = false) {
-    // 缓存 5 分钟
+    // 使用配置的缓存时间
     const now = Date.now()
-    if (!forceRefresh && this.lastFetchTime && (now - this.lastFetchTime) < 5 * 60 * 1000) {
+    if (!forceRefresh && this.lastFetchTime && (now - this.lastFetchTime) < CACHE_EXPIRE_TIME.shopStatus) {
       return
     }
 
@@ -27,8 +30,10 @@ export const shopStore = observable({
     try {
       const status: ShopStatus = await getShopStatus()
       this.isOpen = status.is_open
-      this.businessHours = status.business_hours
-      this.announcement = status.announcement || ''
+      this.deliveryRadius = status.delivery_radius_m
+      this.timezone = status.timezone
+      this.openHours = status.open_hours || {}
+      this.location = status.location || null
       this.features = status.features
       this.lastFetchTime = now
     } catch (error) {

@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/menu/menu",
     "pages/order-list/order-list",
     "pages/profile/profile",
     "pages/logs/logs"
@@ -10,6 +11,7 @@
     "navigationStyle": "custom"
   },
   "tabBar": {
+    "custom": true,
     "color": "#999999",
     "selectedColor": "#07c160",
     "backgroundColor": "#ffffff",
@@ -17,21 +19,19 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "菜单",
-        "iconPath": "images/home.png",
-        "selectedIconPath": "images/home-active.png"
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/menu/menu",
+        "text": "点单"
       },
       {
         "pagePath": "pages/order-list/order-list",
-        "text": "订单",
-        "iconPath": "images/order.png",
-        "selectedIconPath": "images/order-active.png"
+        "text": "订单"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的",
-        "iconPath": "images/profile.png",
-        "selectedIconPath": "images/profile-active.png"
+        "text": "我的"
       }
     ]
   },
@@ -46,7 +46,6 @@
     "skyline": {
       "defaultDisplayBlock": true,
       "defaultContentBox": true,
-      "tagNameStyleIsolation": "legacy",
       "disableABTest": true,
       "sdkVersionBegin": "3.0.0",
       "sdkVersionEnd": "15.255.255"
