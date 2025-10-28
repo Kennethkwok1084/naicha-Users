@@ -1,0 +1,68 @@
+<!-- pages/menu/menu.wxml -->
+<view class="menu-page">
+  <!-- 自定义导航栏 -->
+  <navigation-bar title="菜单" back="{{false}}" color="black" background="#FFF" />
+
+  <!-- 打烊提示 -->
+  <van-notice-bar 
+    wx:if="{{!shopIsOpen}}"
+    left-icon="warning-o"
+    text="{{shopAnnouncement || '店铺休息中,暂不接单'}}"
+    color="#ed6a0c"
+    background="#fffbe8"
+  />
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="menu-page__loading">
+    <van-loading type="spinner" size="48rpx">加载中...</van-loading>
+  </view>
+
+  <!-- 菜单内容 -->
+  <view wx:else class="menu-page__container">
+    <!-- 左侧分类导航 -->
+    <view class="menu-page__sidebar">
+      <van-sidebar 
+        active-key="{{activeCategory}}" 
+        bind:change="onCategoryChange"
+      >
+        <van-sidebar-item 
+          wx:for="{{categories}}" 
+          wx:key="id"
+          title="{{item.name}}"
+          name="{{item.id}}"
+        />
+      </van-sidebar>
+    </view>
+
+    <!-- 右侧商品列表 -->
+    <scroll-view 
+      class="menu-page__products" 
+      scroll-y
+      enhanced
+      show-scrollbar="{{false}}"
+    >
+      <view wx:if="{{currentProducts.length === 0}}" class="menu-page__empty">
+        <van-empty description="该分类暂无商品" />
+      </view>
+
+      <view wx:else class="menu-page__products-list">
+        <view 
+          wx:for="{{currentProducts}}" 
+          wx:key="id"
+          class="menu-page__product-item"
+        >
+          <product-card
+            product-id="{{item.id}}"
+            name="{{item.name}}"
+            description="{{item.description}}"
+            price="{{item.base_price}}"
+            image-url="{{item.image_url}}"
+            sold-out="{{!item.is_available}}"
+            bind:tap="onProductTap"
+          />
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+

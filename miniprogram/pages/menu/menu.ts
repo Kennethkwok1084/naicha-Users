@@ -1,0 +1,173 @@
+// pages/menu/menu.ts
+import { createStoreBindings } from 'mobx-miniprogram-bindings'
+import { menuStore, shopStore } from '../../stores/index'
+import { Product } from '../../api/menu'
+
+Component({
+  data: {
+    // 店铺状态
+    shopIsOpen: true,
+    shopAnnouncement: '',
+    
+    // 菜单数据
+    categories: [] as any[],
+    products: [] as Product[],
+    activeCategory: 0,
+    currentProducts: [] as Product[],
+    
+    // 售罄商品显示策略: 'hide' | 'disabled'
+    soldOutStyle: 'disabled' as 'hide' | 'disabled',
+    
+    // 加载状态
+    loading: true
+  },
+
+  storeBindings: null as any,
+
+  lifetimes: {
+    attached(this: any) {
+      this.initStoreBindings()
+      this.loadData()
+    },
+
+    detached(this: any) {
+      if (this.storeBindings) {
+        this.storeBindings.destroyStoreBindings()
+      }
+    }
+  },
+
+  pageLifetimes: {
+    show() {
+      // 更新 tabBar 选中状态
+      const that = this as any
+      if (typeof that.getTabBar === 'function' && that.getTabBar()) {
+        that.getTabBar().updateActive('menu')
+      }
+
+      // 刷新店铺状态
+      shopStore.fetchShopStatus()
+    }
+  },
+
+  methods: {
+    // 初始化 Store 绑定
+    initStoreBindings(this: any) {
+      this.storeBindings = createStoreBindings(this, {
+        store: shopStore,
+        fields: {
+          shopIsOpen: 'isOpen',
+          shopAnnouncement: 'announcement'
+        },
+        actions: []
+      })
+    },
+
+    // 加载数据
+    async loadData(this: any) {
+      this.setData({ loading: true })
+
+      try {
+        // 并行加载店铺状态和菜单数据
+        await Promise.all([
+          shopStore.fetchShopStatus(),
+          menuStore.fetchMenu()
+        ])
+
+        const categories = menuStore.categories
+        const products = menuStore.products
+
+        // 设置默认选中第一个分类
+        const activeCategory = categories.length > 0 ? categories[0].id : 0
+
+        this.setData({
+          categories,
+          products,
+          activeCategory,
+          loading: false
+        })
+
+        // 更新当前分类的商品列表
+        this.updateCurrentProducts()
+      } catch (error) {
+        console.error('加载菜单数据失败:', error)
+        wx.showToast({
+          title: '加载失败,请重试',
+          icon: 'none'
+        })
+        this.setData({ loading: false })
+      }
+    },
+
+    // 分类切换
+    onCategoryChange(this: any, event: any) {
+      const categoryId = event.detail
+      this.setData({
+        activeCategory: categoryId
+      })
+      this.updateCurrentProducts()
+    },
+
+    // 更新当前分类的商品列表
+    updateCurrentProducts(this: any) {
+      const { activeCategory, products, soldOutStyle } = this.data
+      
+      let currentProducts = products.filter(
+        (p: Product) => p.category_id === activeCategory
+      )
+
+      // 根据售罄策略处理
+      if (soldOutStyle === 'hide') {
+        // 隐藏售罄商品
+        currentProducts = currentProducts.filter((p: Product) => p.is_available)
+      }
+
+      this.setData({
+        currentProducts
+      })
+    },
+
+    // 商品点击
+    onProductTap(this: any, event: any) {
+      const { productid } = event.detail
+      
+      if (!productid) {
+        return
+      }
+
+      // TODO: 跳转到商品详情页
+      wx.navigateTo({
+        url: `/pages/product-detail/product-detail?id=${productid}`
+      })
+    },
+
+    // 下拉刷新
+    async onPullDownRefresh(this: any) {
+      try {
+        await Promise.all([
+          shopStore.fetchShopStatus(true),
+          menuStore.fetchMenu(true)
+        ])
+        
+        this.setData({
+          categories: menuStore.categories,
+          products: menuStore.products
+        })
+        
+        this.updateCurrentProducts()
+        wx.showToast({
+          title: '刷新成功',
+          icon: 'success'
+        })
+      } catch (error) {
+        wx.showToast({
+          title: '刷新失败',
+          icon: 'none'
+        })
+      } finally {
+        wx.stopPullDownRefresh()
+      }
+    }
+  }
+})
+

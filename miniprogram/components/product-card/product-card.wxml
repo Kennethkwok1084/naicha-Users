@@ -1,0 +1,30 @@
+<!-- components/product-card/product-card.wxml -->
+<view class="product-card {{soldOut ? 'product-card--sold-out' : ''}}" bind:tap="handleTap">
+  <!-- 商品图片 -->
+  <view class="product-card__image-wrapper">
+    <image 
+      class="product-card__image" 
+      src="{{imageUrl || '/images/placeholder-product.png'}}"
+      mode="aspectFill"
+      lazy-load
+    />
+    <view wx:if="{{soldOut}}" class="product-card__sold-out-badge">
+      <text>已售罄</text>
+    </view>
+  </view>
+
+  <!-- 商品信息 -->
+  <view class="product-card__content">
+    <view class="product-card__name">{{name}}</view>
+    <view wx:if="{{description}}" class="product-card__desc">{{description}}</view>
+    <view class="product-card__footer">
+      <view class="product-card__price">
+        <text class="product-card__price-symbol">¥</text>
+        <text class="product-card__price-value">{{price}}</text>
+      </view>
+      <view wx:if="{{!soldOut}}" class="product-card__add-btn">
+        <text class="product-card__add-icon">+</text>
+      </view>
+    </view>
+  </view>
+</view>
