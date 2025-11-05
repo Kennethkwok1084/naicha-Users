@@ -45,7 +45,7 @@ npm init -y
 
 # 安装核心依赖
 npm install mobx-miniprogram mobx-miniprogram-bindings
-npm install @vant/weapp
+npm install tdesign-miniprogram
 npm install zod
 npm install uuid
 

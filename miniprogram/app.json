@@ -2,6 +2,7 @@
   "pages": [
     "pages/index/index",
     "pages/menu/menu",
+    "pages/product-detail/product-detail",
     "pages/order-list/order-list",
     "pages/profile/profile",
     "pages/logs/logs"

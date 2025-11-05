@@ -6,11 +6,7 @@ Component({
 
   pageLifetimes: {
     show() {
-      // 更新 tabBar 选中状态
-      const that = this as any
-      if (typeof that.getTabBar === 'function' && that.getTabBar()) {
-        that.getTabBar().updateActive('order-list')
-      }
+      // Skyline 模式下 getTabBar 存在兼容性问题,暂时禁用
     }
   },
 

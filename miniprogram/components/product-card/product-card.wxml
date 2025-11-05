@@ -4,7 +4,7 @@
   <view class="product-card__image-wrapper">
     <image 
       class="product-card__image" 
-      src="{{imageUrl || '/images/placeholder-product.png'}}"
+      src="{{safeImage}}"
       mode="aspectFill"
       lazy-load
     />
@@ -22,7 +22,7 @@
         <text class="product-card__price-symbol">¥</text>
         <text class="product-card__price-value">{{price}}</text>
       </view>
-      <view wx:if="{{!soldOut}}" class="product-card__add-btn">
+      <view wx:if="{{!soldOut}}" class="product-card__add-btn" catchtap="handleAdd">
         <text class="product-card__add-icon">+</text>
       </view>
     </view>

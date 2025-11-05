@@ -1,18 +1,20 @@
 <!--custom-tab-bar/index.wxml-->
-<t-tab-bar 
-  value="{{active}}" 
-  bindchange="onChange" 
-  shape="round" 
-  theme="tag" 
-  split="{{false}}"
->
-  <t-tab-bar-item
-    wx:for="{{list}}"
-    wx:key="name"
-    value="{{item.name}}"
-    icon="{{item.icon}}"
-    ariaLabel="{{item.text}}"
+<view class="custom-tab-bar-wrapper">
+  <t-tab-bar 
+    t-class="custom-t-tab-bar"
+    value="{{active}}" 
+    bindchange="onChange" 
+    theme="tag" 
+    split="{{false}}"
+    safe-area-inset-bottom="{{false}}"
   >
-    {{item.text}}
-  </t-tab-bar-item>
-</t-tab-bar>
+    <t-tab-bar-item
+      wx:for="{{list}}"
+      wx:key="name"
+      value="{{item.name}}"
+      icon="{{item.icon}}"
+    >
+      {{item.text}}
+    </t-tab-bar-item>
+  </t-tab-bar>
+</view>

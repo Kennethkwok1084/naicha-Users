@@ -1,12 +1,17 @@
 {
   "usingComponents": {
-    "navigation-bar": "/components/navigation-bar/navigation-bar",
     "product-card": "/components/product-card/product-card",
-    "van-sidebar": "@vant/weapp/sidebar/index",
-    "van-sidebar-item": "@vant/weapp/sidebar-item/index",
-    "van-empty": "@vant/weapp/empty/index",
-    "van-loading": "@vant/weapp/loading/index",
-    "van-notice-bar": "@vant/weapp/notice-bar/index"
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-popup": "tdesign-miniprogram/popup/popup",
+    "t-skeleton": "tdesign-miniprogram/skeleton/skeleton",
+    "t-stepper": "tdesign-miniprogram/stepper/stepper",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-side-bar": "tdesign-miniprogram/side-bar/side-bar",
+    "t-side-bar-item": "tdesign-miniprogram/side-bar-item/side-bar-item",
+    "t-empty": "tdesign-miniprogram/empty/empty",
+    "t-loading": "tdesign-miniprogram/loading/loading",
+    "t-notice-bar": "tdesign-miniprogram/notice-bar/notice-bar"
   },
-  "navigationBarTitleText": "菜单"
+  "navigationBarTitleText": "菜单",
+  "navigationStyle": "custom"
 }

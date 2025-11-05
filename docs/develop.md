@@ -325,7 +325,7 @@ miniprogram/
       * [x] 初始化 `package.json` (`npm init -y`)。
   * [x] **M0.2**: 安装核心依赖 ✅
       * [x] 安装 `mobx-miniprogram`, `mobx-miniprogram-bindings`。
-      * [x] 安装 `@vant/weapp`, `zod`, `uuid`。
+      * [x] 安装 `tdesign-miniprogram`, `zod`, `uuid`。
       * [x] 安装开发依赖 `miniprogram-api-typings`, `@types/uuid`。
   * [x] **M0.3**: 配置 TypeScript ✅
       * [x] 创建/修改 `tsconfig.json`，设置 `strict`, `paths` 别名 (`@/*`), `types`。

@@ -1,5 +1,4 @@
 /* pages/profile/profile.wxss */
 .container {
   padding: 20rpx;
-  padding-bottom: 180rpx; /* 为悬浮 TabBar 预留空间 */
 }

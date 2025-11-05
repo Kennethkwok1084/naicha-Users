@@ -1,10 +1,40 @@
 // app.ts
+import { cartStore } from './stores/index'
+
+// 全局错误抑制 - Skyline 渲染器兼容性处理
+function setupErrorHandlers() {
+  // 抑制控制台中的特定错误
+  const originalConsoleError = console.error;
+  console.error = function(...args: any[]) {
+    const message = args.join(' ');
+    const ignoredPatterns = [
+      '__subscribe_webviewId',
+      'postMessage',
+      'webapi_getwxaasyncsecinfo',
+      'ERR_PROXY_CONNECTION_FAILED',
+      'Failed to fetch'
+    ];
+    
+    const shouldIgnore = ignoredPatterns.some(pattern => message.includes(pattern));
+    
+    if (!shouldIgnore) {
+      originalConsoleError.apply(console, args);
+    }
+  };
+}
+
 App<IAppOption>({
   globalData: {
     theme: 'default' // 'default' | 'elder'
   },
   
   onLaunch() {
+    // 全局错误抑制
+    setupErrorHandlers();
+    
+    // 初始化购物车
+    cartStore.init();
+    
     // 检查小程序更新
     this.checkUpdate();
     
@@ -29,6 +59,23 @@ App<IAppOption>({
       }
     } catch (e) {
       console.warn('获取环境信息失败,跳过登录:', e);
+    }
+  },
+
+  onError(error: string) {
+    // 过滤已知的 Skyline 渲染器兼容性错误
+    const ignoredErrors = [
+      '__subscribe_webviewId',
+      'postMessage',
+      'webapi_getwxaasyncsecinfo',
+      'Failed to fetch'
+    ];
+    
+    const shouldIgnore = ignoredErrors.some(pattern => error.includes(pattern));
+    
+    if (!shouldIgnore) {
+      console.error('App Error:', error);
+      // 可以在这里上报到错误监控平台
     }
   },
 
