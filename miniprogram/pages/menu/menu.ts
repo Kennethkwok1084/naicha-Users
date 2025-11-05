@@ -458,7 +458,9 @@ Component({
     onNavigateToShop(this: any) {
       const address = shopStore.shopAddress
       const name = shopStore.shopName
+      const location = shopStore.location
       
+      // 检查是否有地址
       if (!address) {
         wx.showToast({
           title: '店铺地址暂无',
@@ -467,9 +469,18 @@ Component({
         return
       }
 
+      // 检查是否有经纬度
+      if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
+        wx.showToast({
+          title: '店铺位置信息暂无',
+          icon: 'none'
+        })
+        return
+      }
+
       wx.openLocation({
-        latitude: 0,
-        longitude: 0,
+        latitude: location.lat,
+        longitude: location.lng,
         name: name || '清风茶記',
         address: address,
         scale: 15,
