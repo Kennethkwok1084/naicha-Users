@@ -1,18 +1,17 @@
 <!-- pages/menu/menu.wxml -->
 <view class="menu-page">
   <!-- 打烊提示 -->
-  <van-notice-bar 
+  <t-notice-bar 
     wx:if="{{!shopIsOpen}}"
-    left-icon="warning-o"
-    text="店铺休息中，暂不接单"
-    color="#ed6a0c"
-    background="#fffbe8"
+    prefixIcon="error-circle"
+    content="店铺休息中，暂不接单"
+    theme="warning"
     bindtap="onShowShopDetail"
   />
 
   <!-- 加载状态 -->
   <view wx:if="{{loading}}" class="menu-page__loading">
-    <van-loading type="spinner" size="48rpx">加载中...</van-loading>
+    <t-loading theme="circular" size="48rpx" text="加载中..." />
   </view>
 
   <!-- 菜单内容 -->
@@ -87,17 +86,17 @@
     <view class="menu-page__content">
       <!-- 左侧分类导航 -->
       <view class="menu-page__sidebar">
-        <van-sidebar 
-          active-key="{{activeCategory}}" 
+        <t-side-bar 
+          value="{{activeCategory}}" 
           bind:change="onCategoryChange"
         >
-          <van-sidebar-item 
+          <t-side-bar-item 
             wx:for="{{categories}}" 
             wx:key="category_id"
-            title="{{item.name}}"
-            name="{{item.category_id}}"
+            label="{{item.name}}"
+            value="{{item.category_id}}"
           />
-        </van-sidebar>
+        </t-side-bar>
       </view>
 
       <!-- 右侧商品列表 -->
@@ -108,7 +107,7 @@
         show-scrollbar="{{false}}"
       >
         <view wx:if="{{currentProducts.length === 0}}" class="menu-page__empty">
-          <van-empty description="该分类暂无商品" />
+          <t-empty description="该分类暂无商品" />
         </view>
 
         <view wx:else class="menu-page__products-list">

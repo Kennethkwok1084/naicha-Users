@@ -177,7 +177,7 @@ Component({
 
     // 分类切换
     onCategoryChange(this: any, event: any) {
-      const categoryId = event.detail
+      const categoryId = event.detail.value ?? event.detail
       this.setData({
         activeCategory: categoryId
       })

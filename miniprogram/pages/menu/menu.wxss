@@ -204,6 +204,11 @@ page {
   border-right: 1px solid var(--border-color, #eee);
 }
 
+/* TDesign SideBar 样式调整 */
+.menu-page__sidebar t-side-bar {
+  height: 100%;
+}
+
 .menu-page__products {
   flex: 1;
   height: 100%;
