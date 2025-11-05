@@ -35,6 +35,25 @@ export interface ShopStatus {
   open_hours?: ShopOpenHours
   location?: ShopLocation
   features: ShopFeatures
+  business_hours_today?: string | null
+}
+
+/**
+ * 店铺基础信息
+ */
+export interface ShopProfile {
+  name: string
+  address: string
+  phone: string
+  announcement?: string | null
+  logo_url?: string | null
+  updated_at?: string | null
+  delivery_notes?: string[] | null
+  supports_pickup?: boolean | null
+  supports_delivery?: boolean | null
+  min_delivery_amount?: string | null
+  delivery_fee?: string | null
+  free_delivery_amount?: string | null
 }
 
 /**
@@ -51,6 +70,19 @@ export interface DeliveryCheckRequest {
 export interface DeliveryCheckResponse {
   deliverable: boolean
   distance_m: number
+}
+
+/**
+ * 获取店铺基础信息
+ * GET /api/v1/shop/profile
+ */
+export async function getShopProfile(): Promise<ShopProfile> {
+  const response = await request<ShopProfile>({
+    url: '/api/v1/shop/profile',
+    method: 'GET',
+    needAuth: false
+  })
+  return response.data!
 }
 
 /**
@@ -85,3 +117,4 @@ export async function checkDeliveryRange(
   })
   return response.data!
 }
+

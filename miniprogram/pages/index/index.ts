@@ -97,11 +97,7 @@ Component({
 
   pageLifetimes: {
     show() {
-      // 更新 tabBar 选中状态
-      const that = this as any
-      if (typeof that.getTabBar === 'function' && that.getTabBar()) {
-        that.getTabBar().updateActive('index')
-      }
+      // Skyline 模式下 getTabBar 存在兼容性问题,暂时禁用
     }
   },
 
@@ -134,7 +130,8 @@ Component({
     onBannerTap(e: WechatMiniprogram.BaseEvent) {
       const { link } = e.currentTarget.dataset
       if (link) {
-        wx.navigateTo({ url: link })
+        const that = this as any
+        that.openUrl(link)
       }
     },
 
@@ -148,7 +145,8 @@ Component({
       }
       
       if (path) {
-        wx.navigateTo({ url: path })
+        const that = this as any
+        that.openUrl(path)
       }
     },
 
@@ -156,7 +154,25 @@ Component({
     onAdTap(e: WechatMiniprogram.BaseEvent) {
       const { link } = e.currentTarget.dataset
       if (link) {
-        wx.navigateTo({ url: link })
+        const that = this as any
+        that.openUrl(link)
+      }
+    },
+
+    // 打开链接，自动根据是否为 tabBar 页面选择 switchTab 或 navigateTo
+    openUrl(url: string) {
+      if (!url) return
+      const tabPages = [
+        '/pages/index/index',
+        '/pages/menu/menu',
+        '/pages/order-list/order-list',
+        '/pages/profile/profile'
+      ]
+
+      if (tabPages.includes(url)) {
+        wx.switchTab({ url })
+      } else {
+        wx.navigateTo({ url })
       }
     },
 

@@ -23,11 +23,9 @@
   },
   "homepage": "https://github.com/Kennethkwok1084/naicha-Users#readme",
   "dependencies": {
-    "@vant/weapp": "^1.11.7",
     "mobx-miniprogram": "^6.12.3",
     "mobx-miniprogram-bindings": "^5.1.1",
     "tdesign-miniprogram": "^1.11.0",
-    "uuid": "^9.0.1",
-    "zod": "^3.23.8"
+    "uuid": "^9.0.1"
   }
 }

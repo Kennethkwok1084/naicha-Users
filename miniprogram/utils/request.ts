@@ -1,17 +1,6 @@
 // utils/request.ts
-import { z } from 'zod';
 import { getStorage } from './storage';
 import { API_BASE_URL, REQUEST_TIMEOUT, DEBUG } from '../config/index';
-
-/**
- * 后端统一响应格式 Schema
- */
-const ApiResponseSchema = z.object({
-  code: z.number(),
-  message: z.string(),
-  data: z.any().optional(),
-  trace_id: z.string().optional()
-});
 
 /**
  * API 响应类型
@@ -22,6 +11,18 @@ export type ApiResponse<T = any> = {
   data?: T;
   trace_id?: string;
 };
+
+/**
+ * 验证响应格式
+ */
+function isValidApiResponse(data: any): data is ApiResponse {
+  return (
+    data !== null &&
+    typeof data === 'object' &&
+    typeof data.code === 'number' &&
+    typeof data.message === 'string'
+  );
+}
 
 /**
  * 请求配置选项
@@ -86,13 +87,17 @@ export function request<T = any>(options: RequestOptions): Promise<ApiResponse<T
       success: (res) => {
         // HTTP 状态码处理
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          try {
-            // 校验响应格式
-            const result = ApiResponseSchema.parse(res.data);
+          // 兼容两种响应格式：
+          // 1. 统一格式: { code: 0, message: "success", data: {...} }
+          // 2. 直接数据: {...}
+          
+          if (isValidApiResponse(res.data)) {
+            // 标准格式
+            const result = res.data as ApiResponse<T>;
             
             // 业务错误码处理
             if (result.code === 0) {
-              resolve(result as ApiResponse<T>);
+              resolve(result);
             } else {
               // 业务错误
               wx.showToast({
@@ -102,13 +107,14 @@ export function request<T = any>(options: RequestOptions): Promise<ApiResponse<T
               });
               reject(result);
             }
-          } catch (error) {
-            console.error('响应格式错误:', error);
-            wx.showToast({
-              title: '数据格式错误',
-              icon: 'none'
-            });
-            reject(error);
+          } else {
+            // 直接数据格式，包装成标准格式
+            const wrappedResponse: ApiResponse<T> = {
+              code: 0,
+              message: 'success',
+              data: res.data as T
+            };
+            resolve(wrappedResponse);
           }
         } else if (res.statusCode === 401) {
           // 未授权，清除 token 并跳转登录

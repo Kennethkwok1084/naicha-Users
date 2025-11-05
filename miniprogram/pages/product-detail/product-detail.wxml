@@ -1,0 +1,123 @@
+<!--pages/product-detail/product-detail.wxml-->
+<wxs module="utils">
+  function formatPrice(price) {
+    if (typeof price !== 'number') {
+      price = parseFloat(price) || 0
+    }
+    return price.toFixed(2)
+  }
+  
+  function calculateTotal(price, quantity) {
+    if (typeof price !== 'number') {
+      price = parseFloat(price) || 0
+    }
+    if (typeof quantity !== 'number') {
+      quantity = parseInt(quantity) || 1
+    }
+    return (price * quantity).toFixed(2)
+  }
+  
+  module.exports = {
+    formatPrice: formatPrice,
+    calculateTotal: calculateTotal
+  }
+</wxs>
+
+<view class="product-detail">
+  <t-toast id="product-toast" />
+
+  <block wx:if="{{loading}}">
+    <t-skeleton
+      animation
+      row-col="{{productSkeletonRows}}"
+      theme="paragraph"
+    />
+  </block>
+
+  <view wx:else class="product-detail__content">
+    <view class="product-detail__image-wrapper">
+      <image
+        wx:if="{{product.image_url}}"
+        class="product-detail__image"
+        src="{{product.image_url}}"
+        mode="aspectFill"
+      />
+      <view wx:else class="product-detail__image-placeholder">
+        <t-icon name="image" size="80rpx" color="#ccc" />
+      </view>
+      <view wx:if="{{isSoldOut}}" class="product-detail__sold-out-badge">已售罄</view>
+    </view>
+
+    <view class="product-detail__info">
+      <view class="product-detail__header">
+        <text class="product-detail__name">{{product.name}}</text>
+        <text class="product-detail__price">¥{{utils.formatPrice(displayPrice)}}</text>
+      </view>
+      <text wx:if="{{product.description}}" class="product-detail__desc">{{product.description}}</text>
+    </view>
+
+    <view wx:if="{{product && product.spec_groups && product.spec_groups.length > 0}}" class="product-detail__specs">
+      <view wx:for="{{product.spec_groups}}" wx:key="group_id" class="spec-group">
+        <view class="spec-group__header">
+          <text class="spec-group__name">{{item.name}}</text>
+          <text class="spec-group__required">必选</text>
+        </view>
+        <view class="spec-group__options">
+          <block wx:if="{{item.options && item.options.length > 0}}">
+            <view
+              wx:for="{{item.options}}"
+              wx:for-item="option"
+              wx:key="option_id"
+              class="spec-option {{selectedSpecs[item.group_id] && selectedSpecs[item.group_id].option_id === option.option_id ? 'spec-option--selected' : ''}} {{option.inventory_status === 'sold_out' ? 'spec-option--disabled' : ''}}"
+              data-group-id="{{item.group_id}}"
+              data-option="{{option}}"
+              bindtap="handleSelectSpec"
+            >
+              <text class="spec-option__name">{{option.name}}</text>
+              <text wx:if="{{option.price_modifier > 0}}" class="spec-option__price">+¥{{utils.formatPrice(option.price_modifier)}}</text>
+              <text wx:if="{{option.inventory_status === 'sold_out'}}" class="spec-option__sold-out">售罄</text>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <view class="product-detail__quantity">
+      <text class="product-detail__quantity-label">数量</text>
+      <t-stepper
+        value="{{quantity}}"
+        min="1"
+        max="99"
+        bind:change="handleQuantityChange"
+      />
+    </view>
+
+    <view class="product-detail__footer">
+      <view class="product-detail__total">
+        <text class="product-detail__total-label">小计</text>
+        <text class="product-detail__total-price">¥{{utils.calculateTotal(displayPrice, quantity)}}</text>
+      </view>
+      <t-button
+        wx:if="{{!isSoldOut}}"
+        theme="primary"
+        size="large"
+        shape="round"
+        block
+        bindtap="handleAddToCart"
+      >
+        加入购物车
+      </t-button>
+      <t-button
+        wx:else
+        theme="warning"
+        size="large"
+        shape="round"
+        block
+        bindtap="handleWant"
+      >
+        想要 / 到货通知
+      </t-button>
+    </view>
+  </view>
+</view>
+

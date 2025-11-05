@@ -85,4 +85,15 @@ page.theme-elder {
   border: 2rpx solid var(--color-primary);
   border-radius: var(--border-radius-md);
 }
+
+/* TDesign Popup 全局层级控制 - 确保在 TabBar 之上 */
+t-popup,
+.t-popup,
+.t-popup__content {
+  z-index: 99999 !important;
+}
+
+.t-popup__overlay {
+  z-index: 99998 !important;
+}
  
