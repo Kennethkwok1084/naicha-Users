@@ -41,7 +41,6 @@
       "desc": "你的位置信息将用于配送地址选择和配送范围检查"
     }
   },
-  "style": "v2",
   "renderer": "skyline",
   "rendererOptions": {
     "skyline": {

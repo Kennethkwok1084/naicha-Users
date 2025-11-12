@@ -10,7 +10,19 @@
     "t-side-bar-item": "tdesign-miniprogram/side-bar-item/side-bar-item",
     "t-empty": "tdesign-miniprogram/empty/empty",
     "t-loading": "tdesign-miniprogram/loading/loading",
-    "t-notice-bar": "tdesign-miniprogram/notice-bar/notice-bar"
+    "t-notice-bar": "tdesign-miniprogram/notice-bar/notice-bar",
+    "t-search": "tdesign-miniprogram/search/search",
+    "t-tabs": "tdesign-miniprogram/tabs/tabs",
+    "t-tab-panel": "tdesign-miniprogram/tab-panel/tab-panel",
+    "t-badge": "tdesign-miniprogram/badge/badge",
+    "t-radio-group": "tdesign-miniprogram/radio-group/radio-group",
+    "t-radio": "tdesign-miniprogram/radio/radio",
+    "t-checkbox-group": "tdesign-miniprogram/checkbox-group/checkbox-group",
+    "t-checkbox": "tdesign-miniprogram/checkbox/checkbox",
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-divider": "tdesign-miniprogram/divider/divider",
+    "t-textarea": "tdesign-miniprogram/textarea/textarea",
+    "t-image": "tdesign-miniprogram/image/image"
   },
   "navigationBarTitleText": "菜单",
   "navigationStyle": "custom"

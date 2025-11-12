@@ -1,13 +1,79 @@
 // pages/menu/menu.ts
 import { createStoreBindings } from 'mobx-miniprogram-bindings'
 import { menuStore, shopStore, cartStore } from '../../stores/index'
-import { MenuProduct, MenuCategory, MenuSpecOption } from '../../api/menu'
+import { MenuProduct, MenuCategory, MenuSpecOption, MenuSpecGroup } from '../../api/menu'
 import { SOLDOUT_STYLE } from '../../config/index'
 import type { CartItem } from '../../stores/cartStore'
 
+type SpecSelectionValue = MenuSpecOption | MenuSpecOption[]
+
 interface SelectedSpecsMap {
-  [groupId: number]: MenuSpecOption
+  [groupId: number]: SpecSelectionValue | undefined
 }
+
+interface SpecGroupBehavior {
+  type: 'single' | 'multiple'
+  max?: number
+  tag?: string
+  required?: boolean
+}
+
+const GROUP_BEHAVIOR_OVERRIDES: Record<string, SpecGroupBehavior> = {
+  温度: { type: 'single', required: true, tag: '必选' },
+  冰块: { type: 'single', required: true, tag: '必选' },
+  甜度: { type: 'single', required: true, tag: '必选' },
+  杯型: { type: 'single', required: true, tag: '必选' },
+  浓度: { type: 'single', required: true, tag: '必选' },
+  加料: { type: 'multiple', max: 2, required: false, tag: '最多2项' },
+  配料: { type: 'multiple', required: false }
+}
+
+const MULTIPLE_KEYWORDS = ['加料', '加配', '配料', 'topping', 'addon', 'add-on']
+
+const DEFAULT_SPEC_GROUPS: MenuSpecGroup[] = [
+  {
+    group_id: -1001,
+    name: '温度',
+    sort_order: 1,
+    options: [
+      { option_id: -1101, name: '冰饮', price_modifier: 0, inventory_status: 'available', sort_order: 1 },
+      { option_id: -1102, name: '热饮', price_modifier: 0, inventory_status: 'available', sort_order: 2 }
+    ]
+  },
+  {
+    group_id: -1002,
+    name: '冰块',
+    sort_order: 2,
+    options: [
+      { option_id: -1201, name: '不加冰', price_modifier: 0, inventory_status: 'available', sort_order: 1 },
+      { option_id: -1202, name: '少冰', price_modifier: 0, inventory_status: 'available', sort_order: 2 },
+      { option_id: -1203, name: '正常冰', price_modifier: 0, inventory_status: 'available', sort_order: 3 },
+      { option_id: -1204, name: '多冰', price_modifier: 0, inventory_status: 'available', sort_order: 4 }
+    ]
+  },
+  {
+    group_id: -1003,
+    name: '甜度',
+    sort_order: 3,
+    options: [
+      { option_id: -1301, name: '不加糖', price_modifier: 0, inventory_status: 'available', sort_order: 1 },
+      { option_id: -1302, name: '微糖', price_modifier: 0, inventory_status: 'available', sort_order: 2 },
+      { option_id: -1303, name: '少糖', price_modifier: 0, inventory_status: 'available', sort_order: 3 },
+      { option_id: -1304, name: '标准糖', price_modifier: 0, inventory_status: 'available', sort_order: 4 }
+    ]
+  },
+  {
+    group_id: -1004,
+    name: '加料',
+    sort_order: 4,
+    options: [
+      { option_id: -1401, name: '波霸', price_modifier: 2, inventory_status: 'available', sort_order: 1 },
+      { option_id: -1402, name: '椰果', price_modifier: 2, inventory_status: 'available', sort_order: 2 },
+      { option_id: -1403, name: '仙草', price_modifier: 3, inventory_status: 'available', sort_order: 3 },
+      { option_id: -1404, name: '芋圆', price_modifier: 3, inventory_status: 'available', sort_order: 4 }
+    ]
+  }
+]
 
 Component({
   data: {
@@ -36,24 +102,49 @@ Component({
     supportsDelivery: true,
     headerPaddingTop: 32,
     headerToolbarHeight: 44,
+    searchKeyword: '',
+    noticeExpanded: false,
+    noticeMarquee: { speed: 40, loop: -1 } as any,
+    currentNoticeMarquee: { speed: 40, loop: -1 } as any,
+    sidebarSkeleton: [1, 1, 1, 1, 1, 1],
+    productSkeleton: [
+      { type: 'rect', width: '100%', height: '140rpx' },
+      [{ width: '60%', height: '28rpx' }, { width: '30%', height: '28rpx' }],
+      { width: '70%', height: '28rpx' }
+    ],
     
     // 规格选择弹窗
     specPopupVisible: false,
     selectedProduct: {} as MenuProduct,
     specSelectedSpecs: {} as SelectedSpecsMap,
+    specSelectedOptionIds: {} as Record<number, string | string[]>,
+    specGroupBehaviors: {} as Record<number, SpecGroupBehavior>,
+    specGroups: [] as MenuSpecGroup[],
     specQuantity: 1,
-    specDisplayPrice: 0,
+    specDisplayPrice: '0.00',
     specTotalPrice: '0.00',
+    specPriceBreakdown: '',
+    specNote: '',
+    productImagePlaceholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=',
+    
+    // 购物车浮层
+    cartTotalQuantity: 0,
+    cartTotalPriceDisplay: '0.00',
+    cartBadgeCount: 0,
+    cartHasItems: false,
+    cartDeliveryHint: '预计到手价',
     
     // 加载状态
     loading: true
   },
 
   storeBindings: null as any,
+  cartBindings: null as any,
 
   lifetimes: {
     attached(this: any) {
       this.initStoreBindings()
+      this.initCartBindings()
       this.measureNavigationBar()
       this.loadData()
     },
@@ -61,6 +152,9 @@ Component({
     detached(this: any) {
       if (this.storeBindings) {
         this.storeBindings.destroyStoreBindings()
+      }
+      if (this.cartBindings) {
+        this.cartBindings.destroyStoreBindings()
       }
     }
   },
@@ -111,6 +205,19 @@ Component({
       })
     },
 
+    initCartBindings(this: any) {
+      this.cartBindings = createStoreBindings(this, {
+        store: cartStore,
+        fields: {
+          cartTotalQuantity: 'totalQuantity',
+          cartTotalPriceDisplay: (store: any) => store.totalPrice.toFixed(2),
+          cartBadgeCount: (store: any) => Math.min(store.totalQuantity, 99),
+          cartHasItems: (store: any) => store.totalQuantity > 0
+        },
+        actions: []
+      })
+    },
+
     // 计算导航占位
     measureNavigationBar(this: any) {
       try {
@@ -139,6 +246,16 @@ Component({
       }
     },
 
+    updateCartHint(this: any) {
+      const { deliveryMode, deliveryFee } = this.data
+      let hint = '预计到手价'
+      const hasFee = deliveryFee !== undefined && deliveryFee !== null && `${deliveryFee}` !== ''
+      if (deliveryMode === 'delivery' && hasFee) {
+        hint = `另需配送费¥${deliveryFee}`
+      }
+      this.setData({ cartDeliveryHint: hint })
+    },
+
     // 加载数据
     async loadData(this: any) {
       this.setData({ loading: true })
@@ -165,6 +282,7 @@ Component({
         // 更新当前分类的商品列表
         this.updateCurrentProducts()
         this.normalizeDeliveryMode()
+        this.updateShopDetailContent()
       } catch (error) {
         console.error('加载菜单数据失败:', error)
         wx.showToast({
@@ -209,10 +327,7 @@ Component({
         return
       }
 
-      // 跳转到商品详情页
-      wx.navigateTo({
-        url: `/pages/product-detail/product-detail?id=${productId}`
-      })
+      this.openSpecPopup(productId)
     },
 
     // 商品加号点击 - 打开规格选择弹窗
@@ -223,7 +338,15 @@ Component({
         return
       }
 
-      const product = menuStore.getProductById(productId)
+      this.openSpecPopup(productId)
+    },
+
+    openSpecPopup(this: any, productId: number) {
+      const normalizedId = Number(productId)
+      if (!normalizedId) {
+        return
+      }
+      const product = menuStore.getProductById(normalizedId)
       if (!product) {
         wx.showToast({
           title: '商品不存在',
@@ -241,15 +364,22 @@ Component({
         return
       }
 
-      // 重置规格选择状态
-      const basePrice = Number(product.base_price) || 0
+      const normalizedProduct = this.normalizeProductSpecs(product)
+      const basePrice = Number(normalizedProduct.base_price) || 0
+      const initialState = this.buildInitialSpecState(normalizedProduct)
+      const displayPrice = this.calculateDisplayPrice(basePrice, initialState.specSelectedSpecs)
       this.setData({
         specPopupVisible: true,
-        selectedProduct: product,
-        specSelectedSpecs: {},
+        selectedProduct: normalizedProduct,
+        specGroupBehaviors: initialState.specGroupBehaviors,
+        specSelectedSpecs: initialState.specSelectedSpecs,
+        specSelectedOptionIds: initialState.specSelectedOptionIds,
+        specGroups: initialState.specGroups,
         specQuantity: 1,
-        specDisplayPrice: basePrice.toFixed(2),
-        specTotalPrice: basePrice.toFixed(2)
+        specDisplayPrice: displayPrice.toFixed(2),
+        specTotalPrice: displayPrice.toFixed(2),
+        specPriceBreakdown: this.buildSpecBreakdown(basePrice, initialState.specSelectedSpecs, displayPrice),
+        specNote: ''
       })
     },
 
@@ -259,7 +389,14 @@ Component({
         specPopupVisible: false,
         selectedProduct: {},
         specSelectedSpecs: {},
-        specQuantity: 1
+        specSelectedOptionIds: {},
+        specGroupBehaviors: {},
+        specGroups: [],
+        specQuantity: 1,
+        specDisplayPrice: '0.00',
+        specTotalPrice: '0.00',
+        specPriceBreakdown: '',
+        specNote: ''
       })
     },
 
@@ -270,11 +407,15 @@ Component({
       }
     },
 
-    // 选择规格
-    handleSelectSpec(this: any, event: any) {
-      const { groupId, option } = event.currentTarget.dataset as {
-        groupId: number
-        option: MenuSpecOption
+    handleRadioChange(this: any, event: any) {
+      const groupId = Number(event.currentTarget.dataset.groupId)
+      const optionId = Number(event.detail?.value)
+      if (!groupId || Number.isNaN(optionId)) return
+
+      const option = this.findOptionById(groupId, optionId)
+      if (!option) {
+        this.showSpecToast('规格不可用', 'warning')
+        return
       }
 
       if (option.inventory_status === 'sold_out') {
@@ -283,31 +424,253 @@ Component({
       }
 
       const specSelectedSpecs: SelectedSpecsMap = { ...this.data.specSelectedSpecs }
-      if (specSelectedSpecs[groupId]?.option_id === option.option_id) {
-        delete specSelectedSpecs[groupId]
-      } else {
-        specSelectedSpecs[groupId] = option
-      }
-
-      this.updateSpecPrice(specSelectedSpecs)
+      const specSelectedOptionIds = { ...this.data.specSelectedOptionIds, [groupId]: String(optionId) }
+      specSelectedSpecs[groupId] = option
+      this.commitSpecSelectionState(specSelectedSpecs, specSelectedOptionIds)
     },
 
-    // 更新规格价格
-    updateSpecPrice(this: any, specSelectedSpecs: SelectedSpecsMap) {
+    // 统一的规格选项点击处理
+    onSpecOptionTap(this: any, event: any) {
+      const { groupId, optionId } = event.currentTarget.dataset
+      if (!groupId || !optionId) return
+      
+      const gid = Number(groupId)
+      const oid = Number(optionId)
+      const behavior = this.data.specGroupBehaviors[gid]
+      
+      if (!behavior) return
+      
+      const option = this.findOptionById(gid, oid)
+      if (!option || option.inventory_status === 'sold_out') {
+        return
+      }
+      
+      const specSelectedSpecs: SelectedSpecsMap = { ...this.data.specSelectedSpecs }
+      let specSelectedOptionIds = { ...this.data.specSelectedOptionIds }
+      
+      if (behavior.type === 'single') {
+        // 单选逻辑
+        specSelectedSpecs[gid] = option
+        specSelectedOptionIds[gid] = String(oid)
+      } else {
+        // 多选逻辑
+        let currentSelection = (specSelectedSpecs[gid] || []) as MenuSpecOption[]
+        const index = currentSelection.findIndex((opt: MenuSpecOption) => opt.option_id === oid)
+        
+        if (index > -1) {
+          currentSelection = currentSelection.filter((opt: MenuSpecOption) => opt.option_id !== oid)
+        } else {
+          const maxCount = behavior?.max || 999
+          if (currentSelection.length >= maxCount) {
+            wx.showToast({ title: `最多选择${maxCount}项`, icon: 'none' })
+            return
+          }
+          currentSelection = [...currentSelection, option]
+        }
+        
+        specSelectedSpecs[gid] = currentSelection
+        specSelectedOptionIds[gid] = currentSelection.map((opt: MenuSpecOption) => String(opt.option_id))
+      }
+      
+      // 更新specGroups，添加_selected标记
+      const specGroups = this.data.specGroups.map((g: MenuSpecGroup) => {
+        if (g.group_id !== gid) return g
+        return {
+          ...g,
+          options: g.options.map((opt: MenuSpecOption) => ({
+            ...opt,
+            _selected: behavior.type === 'single' 
+              ? opt.option_id === oid
+              : specSelectedOptionIds[gid].includes(String(opt.option_id))
+          }))
+        }
+      })
+      
+      this.setData({ specGroups })
+      this.commitSpecSelectionState(specSelectedSpecs, specSelectedOptionIds)
+    },
+
+    handleCheckboxChange(this: any, event: any) {
+      const groupId = Number(event.currentTarget.dataset.groupId)
+      if (!groupId) return
+      const behavior = this.data.specGroupBehaviors[groupId]
+      let valueList = (event.detail?.value || [])
+        .map((id: string | number) => Number(id))
+        .filter((id: number) => !Number.isNaN(id))
+
+      if (behavior?.max && behavior.max > 0 && valueList.length > behavior.max) {
+        valueList = valueList.slice(0, behavior.max)
+        this.showSpecToast(`最多可选${behavior.max}项`, 'warning')
+      }
+
+      const group = this.getSpecGroupById(groupId)
+      if (!group) return
+      const options = this.getGroupOptions(group)
+      const selectedOptions = options.filter((option: MenuSpecOption) => valueList.includes(option.option_id))
+
+      const specSelectedSpecs: SelectedSpecsMap = { ...this.data.specSelectedSpecs }
+      specSelectedSpecs[groupId] = selectedOptions
+      const specSelectedOptionIds = { ...this.data.specSelectedOptionIds, [groupId]: valueList.map((id: number) => String(id)) }
+      this.commitSpecSelectionState(specSelectedSpecs, specSelectedOptionIds)
+    },
+
+    commitSpecSelectionState(
+      this: any,
+      specSelectedSpecs: SelectedSpecsMap,
+      specSelectedOptionIds: Record<number, string | string[]>
+    ) {
       const { selectedProduct, specQuantity } = this.data
-      const basePrice = Number(selectedProduct.base_price) || 0
-      const specsTotal = Object.values(specSelectedSpecs).reduce((sum, spec) => {
-        return sum + (Number(spec.price_modifier) || 0)
-      }, 0)
-
-      const displayPrice = basePrice + specsTotal
+      const basePrice = Number(selectedProduct?.base_price) || 0
+      const displayPrice = this.calculateDisplayPrice(basePrice, specSelectedSpecs)
       const totalPrice = displayPrice * specQuantity
-
       this.setData({
         specSelectedSpecs,
+        specSelectedOptionIds,
         specDisplayPrice: displayPrice.toFixed(2),
-        specTotalPrice: totalPrice.toFixed(2)
+        specTotalPrice: totalPrice.toFixed(2),
+        specPriceBreakdown: this.buildSpecBreakdown(basePrice, specSelectedSpecs, displayPrice)
       })
+    },
+
+    calculateDisplayPrice(this: any, basePrice: number, specSelectedSpecs: SelectedSpecsMap): number {
+      const specsTotal = this.flattenSelectedSpecs(specSelectedSpecs).reduce((sum: number, spec: MenuSpecOption) => {
+        return sum + (Number(spec?.price_modifier) || 0)
+      }, 0)
+      return basePrice + specsTotal
+    },
+
+    flattenSelectedSpecs(this: any, specSelectedSpecs: SelectedSpecsMap): MenuSpecOption[] {
+      const list: MenuSpecOption[] = []
+      Object.values(specSelectedSpecs || {}).forEach((selection) => {
+        if (!selection) return
+        if (Array.isArray(selection)) {
+          selection.forEach((option) => option && list.push(option))
+        } else if (selection) {
+          list.push(selection)
+        }
+      })
+      return list
+    },
+
+    buildInitialSpecState(this: any, product: MenuProduct) {
+      const specGroupBehaviors: Record<number, SpecGroupBehavior> = {}
+      const specSelectedSpecs: SelectedSpecsMap = {}
+      const specSelectedOptionIds: Record<number, string | string[]> = {}
+
+      const specGroups = this.getSpecGroups(product).map((group: MenuSpecGroup) => {
+        const behavior = this.resolveGroupBehavior(group.name)
+        specGroupBehaviors[group.group_id] = behavior
+
+        let defaultSelectedId: string | null = null
+        
+        if (behavior.type === 'single') {
+          const options = this.getGroupOptions(group)
+          const defaultOption =
+            options.find((option: MenuSpecOption) => option.inventory_status !== 'sold_out') || options[0]
+          if (defaultOption) {
+            specSelectedSpecs[group.group_id] = defaultOption
+            specSelectedOptionIds[group.group_id] = String(defaultOption.option_id)
+            defaultSelectedId = String(defaultOption.option_id)
+          } else {
+            specSelectedOptionIds[group.group_id] = ''
+          }
+        } else {
+          specSelectedSpecs[group.group_id] = []
+          specSelectedOptionIds[group.group_id] = []
+        }
+        
+        // 添加 _selected 标记
+        return {
+          ...group,
+          options: group.options.map((opt: MenuSpecOption) => ({
+            ...opt,
+            _selected: defaultSelectedId ? opt.option_id === Number(defaultSelectedId) : false
+          }))
+        }
+      })
+
+      return {
+        specGroupBehaviors,
+        specSelectedSpecs,
+        specSelectedOptionIds,
+        specGroups
+      }
+    },
+
+    resolveGroupBehavior(this: any, name?: string): SpecGroupBehavior {
+      const key = (name || '').trim()
+      if (key && GROUP_BEHAVIOR_OVERRIDES[key]) {
+        return { ...GROUP_BEHAVIOR_OVERRIDES[key] }
+      }
+      const lower = key.toLowerCase()
+      if (MULTIPLE_KEYWORDS.some((kw) => lower.includes(kw))) {
+        return { type: 'multiple', required: false }
+      }
+      return { type: 'single', required: true, tag: '必选' }
+    },
+
+    findOptionById(this: any, groupId: number, optionId: number): MenuSpecOption | undefined {
+      const group = this.getSpecGroupById(groupId)
+      if (!group) return undefined
+      const options = this.getGroupOptions(group)
+      return options.find((option: MenuSpecOption) => option.option_id === optionId)
+    },
+
+    getSpecGroupById(this: any, groupId: number) {
+      const groups = this.getSpecGroups()
+      return groups.find((group: any) => group.group_id === groupId)
+    },
+
+    normalizeProductSpecs(this: any, product: MenuProduct): MenuProduct {
+      const rawGroups = this.getSpecGroups(product)
+      const normalizedGroups = (rawGroups.length > 0 ? rawGroups : this.buildDefaultSpecGroups()).map((group: any) => ({
+        ...group,
+        options: this.getGroupOptions(group)
+      }))
+      return {
+        ...product,
+        spec_groups: normalizedGroups
+      }
+    },
+
+    getSpecGroups(this: any, product?: MenuProduct): MenuSpecGroup[] {
+      if (product && Array.isArray(product.spec_groups)) {
+        return product.spec_groups
+      }
+      if (Array.isArray(this.data.specGroups) && this.data.specGroups.length > 0) {
+        return this.data.specGroups
+      }
+      const target = product || this.data.selectedProduct
+      if (!target) return []
+      return Array.isArray(target.spec_groups) ? target.spec_groups : []
+    },
+
+    getGroupOptions(this: any, group: MenuSpecGroup): MenuSpecOption[] {
+      if (!group) return []
+      return Array.isArray(group.options) ? group.options : []
+    },
+
+    buildDefaultSpecGroups() {
+      return DEFAULT_SPEC_GROUPS.map((group) => ({
+        ...group,
+        options: group.options.map((option) => ({ ...option }))
+      }))
+    },
+
+    buildSpecBreakdown(this: any, basePrice: number, specSelectedSpecs: SelectedSpecsMap, displayPrice: number) {
+      const parts: string[] = [`¥${basePrice.toFixed(2)} 面价`]
+      this.flattenSelectedSpecs(specSelectedSpecs).forEach((spec: MenuSpecOption) => {
+        if (!spec) return
+        const modifier = Number(spec.price_modifier) || 0
+        const absValue = Math.abs(modifier).toFixed(2)
+        if (modifier === 0) {
+          parts.push(`${spec.name}¥0.00`)
+        } else {
+          const sign = modifier > 0 ? '+' : '-'
+          parts.push(`${spec.name}${sign}¥${absValue}`)
+        }
+      })
+      return `${parts.join(' + ')} = ¥${displayPrice.toFixed(2)}`
     },
 
     // 数量变化
@@ -322,22 +685,57 @@ Component({
       })
     },
 
+    handleSpecNoteChange(this: any, event: any) {
+      const note = event?.detail?.value || ''
+      this.setData({
+        specNote: note.slice(0, 30)
+      })
+    },
+
     // 加入购物车
     handleAddToCart(this: any) {
-      const { selectedProduct, specSelectedSpecs, specQuantity } = this.data
+      const { selectedProduct, specSelectedSpecs, specQuantity, specGroupBehaviors } = this.data
       
       if (!selectedProduct || !selectedProduct.product_id) {
         return
       }
 
       // 校验必选规格
-      const specGroups = selectedProduct.spec_groups || []
+      const specGroups = this.getSpecGroups(selectedProduct)
       for (const group of specGroups) {
-        if (!specSelectedSpecs[group.group_id]) {
+        const selection = specSelectedSpecs[group.group_id]
+        const behavior = specGroupBehaviors[group.group_id]
+        const isRequired = behavior ? behavior.required !== false : true
+        if (!isRequired) {
+          continue
+        }
+        if (Array.isArray(selection)) {
+          if (!selection || selection.length === 0) {
+            this.showSpecToast(`请选择${group.name}`, 'warning')
+            return
+          }
+        } else if (!selection) {
           this.showSpecToast(`请选择${group.name}`, 'warning')
           return
         }
       }
+
+      const flattenSelected = Object.entries(specSelectedSpecs).reduce((acc, [groupIdStr, selection]) => {
+        if (!selection) return acc
+        const groupId = Number(groupIdStr)
+        const selectionList = Array.isArray(selection) ? selection : [selection]
+        selectionList.forEach((specOption) => {
+          if (!specOption) return
+          acc.push({
+            group_id: groupId,
+            group_name: this.getGroupNameById(groupId),
+            option_id: specOption.option_id,
+            option_name: specOption.name,
+            price_modifier: Number(specOption.price_modifier) || 0
+          })
+        })
+        return acc
+      }, [] as CartItem['selected_specs'])
 
       // 构造购物车项
       const cartItem: CartItem = {
@@ -345,16 +743,7 @@ Component({
         product_name: selectedProduct.name,
         quantity: specQuantity,
         base_price: Number(selectedProduct.base_price) || 0,
-        selected_specs: Object.entries(specSelectedSpecs).map(([groupId, spec]) => {
-          const specOption = spec as MenuSpecOption
-          return {
-            group_id: Number(groupId),
-            group_name: this.getGroupNameById(Number(groupId)),
-            option_id: specOption.option_id,
-            option_name: specOption.name,
-            price_modifier: Number(specOption.price_modifier) || 0
-          }
-        })
+        selected_specs: flattenSelected
       }
 
       // 添加到购物车
@@ -406,6 +795,7 @@ Component({
         
         this.updateCurrentProducts()
         this.normalizeDeliveryMode()
+        this.updateShopDetailContent()
         wx.showToast({
           title: '刷新成功',
           icon: 'success'
@@ -519,17 +909,45 @@ Component({
     },
 
     // 切换配送模式
+    handleServiceTypeChange(this: any, event: any) {
+      const mode = event?.detail?.value
+      this.updateDeliveryMode(mode)
+    },
+
     switchDeliveryMode(this: any, event: any) {
       const { mode } = event.currentTarget.dataset
-      if (!mode || mode === this.data.deliveryMode) {
+      this.updateDeliveryMode(mode)
+    },
+
+    updateDeliveryMode(this: any, rawMode?: string) {
+      const { supportsPickup, supportsDelivery } = this.data
+      let target = rawMode || this.data.deliveryMode
+
+      if (target === 'delivery' && !supportsDelivery) {
+        target = supportsPickup ? 'pickup' : ''
+      } else if (target === 'pickup' && !supportsPickup) {
+        target = supportsDelivery ? 'delivery' : ''
+      }
+
+      if (!target) {
+        target = supportsPickup ? 'pickup' : supportsDelivery ? 'delivery' : ''
+      }
+
+      if (target && target !== this.data.deliveryMode) {
+        this.setData({ deliveryMode: target }, () => this.updateCartHint())
+      } else {
+        this.updateCartHint()
+      }
+    },
+
+    // 返回上一页
+    onGoBack() {
+      const pages = getCurrentPages()
+      if (pages.length > 1) {
+        wx.navigateBack({ delta: 1 })
         return
       }
-      if ((mode === 'pickup' && !this.data.supportsPickup) || (mode === 'delivery' && !this.data.supportsDelivery)) {
-        return
-      }
-      this.setData({
-        deliveryMode: mode
-      })
+      this.onGoHome()
     },
 
     // 返回首页
@@ -546,10 +964,79 @@ Component({
       })
     },
 
-    // 搜索入口
-    onSearch() {
+    handleSearchChange(this: any, event: any) {
+      this.setData({
+        searchKeyword: event?.detail?.value || ''
+      })
+    },
+
+    handleSearchFocus() {
+      this.openSearchPlaceholder()
+    },
+
+    handleSearchClear(this: any) {
+      this.setData({ searchKeyword: '' })
+    },
+
+    handleSearchConfirm(this: any, event: any) {
+      this.setData({
+        searchKeyword: event?.detail?.value || this.data.searchKeyword
+      })
+      this.openSearchPlaceholder()
+    },
+
+    openSearchPlaceholder() {
       wx.showToast({
         title: '搜索功能建设中',
+        icon: 'none'
+      })
+    },
+
+    toggleNotice(this: any) {
+      const { noticeExpanded, noticeMarquee } = this.data
+      const nextExpanded = !noticeExpanded
+      this.setData({
+        noticeExpanded: nextExpanded,
+        currentNoticeMarquee: nextExpanded ? false : noticeMarquee
+      })
+    },
+
+    handleCartPreview(this: any) {
+      if (!this.data.cartHasItems) {
+        wx.showToast({
+          title: '还没选商品',
+          icon: 'none'
+        })
+        return
+      }
+      wx.showToast({
+        title: '购物车弹层建设中',
+        icon: 'none'
+      })
+    },
+
+    goCheckout(this: any) {
+      if (!this.data.cartHasItems) {
+        wx.showToast({
+          title: '请先选择商品',
+          icon: 'none'
+        })
+        return
+      }
+      wx.navigateTo({
+        url: '/pages/order-list/order-list',
+        fail: () => {
+          wx.showToast({
+            title: '暂无法跳转',
+            icon: 'none'
+          })
+        }
+      })
+    },
+
+    handleBuyNow(this: any) {
+      wx.showToast({
+        title: '立即购买流程建设中',
         icon: 'none'
       })
     },
@@ -616,10 +1103,11 @@ Component({
         ]
       }
 
-      this.normalizeDeliveryMode()
       this.setData({
         deliveryInfoLines,
         businessHoursText: businessHoursToday || this.formatBusinessHoursText()
+      }, () => {
+        this.updateCartHint()
       })
     },
 
@@ -644,28 +1132,7 @@ Component({
     },
 
     normalizeDeliveryMode(this: any) {
-      const { supportsDelivery, supportsPickup } = this.data
-      let target = this.data.deliveryMode
-
-      if (target === 'delivery' && !supportsDelivery) {
-        target = supportsPickup ? 'pickup' : ''
-      } else if (target === 'pickup' && !supportsPickup) {
-        target = supportsDelivery ? 'delivery' : ''
-      }
-
-      if (!target) {
-        if (supportsDelivery) {
-          target = 'delivery'
-        } else if (supportsPickup) {
-          target = 'pickup'
-        } else {
-          target = 'pickup'
-        }
-      }
-
-      if (target !== this.data.deliveryMode) {
-        this.setData({ deliveryMode: target })
-      }
+      this.updateDeliveryMode(this.data.deliveryMode)
     }
   }
 })
