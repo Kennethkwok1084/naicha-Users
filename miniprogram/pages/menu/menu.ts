@@ -115,6 +115,7 @@ Component({
     
     // 规格选择弹窗
     specPopupVisible: false,
+    specPopupLoading: true,
     selectedProduct: {} as MenuProduct,
     specSelectedSpecs: {} as SelectedSpecsMap,
     specSelectedOptionIds: {} as Record<number, string | string[]>,
@@ -126,6 +127,12 @@ Component({
     specPriceBreakdown: '',
     specNote: '',
     productImagePlaceholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=',
+    specSkeletonRows: [
+      [{ width: '30%', height: '28rpx' }, { width: '20%', height: '28rpx' }],
+      { width: '100%', height: '80rpx' },
+      { width: '100%', height: '80rpx' },
+      { width: '100%', height: '80rpx' }
+    ],
     
     // 购物车浮层
     cartTotalQuantity: 0,
@@ -368,25 +375,36 @@ Component({
       const basePrice = Number(normalizedProduct.base_price) || 0
       const initialState = this.buildInitialSpecState(normalizedProduct)
       const displayPrice = this.calculateDisplayPrice(basePrice, initialState.specSelectedSpecs)
+      
+      // 先显示弹窗和骨架屏
       this.setData({
         specPopupVisible: true,
-        selectedProduct: normalizedProduct,
-        specGroupBehaviors: initialState.specGroupBehaviors,
-        specSelectedSpecs: initialState.specSelectedSpecs,
-        specSelectedOptionIds: initialState.specSelectedOptionIds,
-        specGroups: initialState.specGroups,
-        specQuantity: 1,
-        specDisplayPrice: displayPrice.toFixed(2),
-        specTotalPrice: displayPrice.toFixed(2),
-        specPriceBreakdown: this.buildSpecBreakdown(basePrice, initialState.specSelectedSpecs, displayPrice),
-        specNote: ''
+        specPopupLoading: true
       })
+      
+      // 模拟加载延迟，然后显示内容
+      setTimeout(() => {
+        this.setData({
+          specPopupLoading: false,
+          selectedProduct: normalizedProduct,
+          specGroupBehaviors: initialState.specGroupBehaviors,
+          specSelectedSpecs: initialState.specSelectedSpecs,
+          specSelectedOptionIds: initialState.specSelectedOptionIds,
+          specGroups: initialState.specGroups,
+          specQuantity: 1,
+          specDisplayPrice: displayPrice.toFixed(2),
+          specTotalPrice: displayPrice.toFixed(2),
+          specPriceBreakdown: this.buildSpecBreakdown(basePrice, initialState.specSelectedSpecs, displayPrice),
+          specNote: ''
+        })
+      }, 300)
     },
 
     // 关闭规格选择弹窗
     closeSpecPopup(this: any) {
       this.setData({ 
         specPopupVisible: false,
+        specPopupLoading: true,
         selectedProduct: {},
         specSelectedSpecs: {},
         specSelectedOptionIds: {},

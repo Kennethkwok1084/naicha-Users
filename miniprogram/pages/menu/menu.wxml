@@ -283,31 +283,51 @@
     bind:visible-change="onSpecPopupChange"
   >
     <view class="spec-popup">
-      <!-- 商品图片与关闭按钮 -->
-      <view class="spec-popup__header">
-        <image
-          class="spec-popup__image"
-          src="{{selectedProduct.image_url || productImagePlaceholder}}"
-          mode="aspectFill"
-        />
-        <view class="spec-popup__close" bindtap="closeSpecPopup">
-          <t-icon name="close" size="48rpx" color="#fff" />
+      <!-- 骨架屏加载状态 -->
+      <view wx:if="{{specPopupLoading}}" class="spec-popup__skeleton">
+        <view class="spec-popup__skeleton-header">
+          <view class="spec-popup__skeleton-image"></view>
+          <view class="spec-popup__close" bindtap="closeSpecPopup">
+            <t-icon name="close" size="48rpx" color="#fff" />
+          </view>
+        </view>
+        <view class="spec-popup__skeleton-info">
+          <t-skeleton theme="paragraph" row-col="{{[[{width: '30%', height: '40rpx'}], [{width: '60%', height: '28rpx'}], [{width: '80%', height: '24rpx'}]]}}" loading="{{true}}" />
+        </view>
+        <view class="spec-popup__skeleton-content">
+          <view class="spec-group" wx:for="{{[1,2,3]}}" wx:key="*this">
+            <t-skeleton theme="paragraph" row-col="{{[[{width: '25%', height: '28rpx'}], {width: '100%', height: '60rpx'}, {width: '100%', height: '60rpx'}]}}" loading="{{true}}" />
+          </view>
         </view>
       </view>
 
-      <!-- 商品信息 -->
-      <view class="spec-popup__info">
-        <view class="spec-popup__price-row">
-          <text class="spec-popup__price">¥{{specDisplayPrice}}</text>
-          <text class="spec-popup__stock">库存充足</text>
+      <!-- 实际内容 -->
+      <block wx:else>
+        <!-- 商品图片与关闭按钮 -->
+        <view class="spec-popup__header">
+          <image
+            class="spec-popup__image"
+            src="{{selectedProduct.image_url || productImagePlaceholder}}"
+            mode="aspectFill"
+          />
+          <view class="spec-popup__close" bindtap="closeSpecPopup">
+            <t-icon name="close" size="48rpx" color="#fff" />
+          </view>
         </view>
-        <text class="spec-popup__name">{{selectedProduct.name}}</text>
-        <text class="spec-popup__desc">{{selectedProduct.description}}</text>
-      </view>
 
-      <!-- 规格选择区域 -->
-      <scroll-view class="spec-popup__content" scroll-y enhanced show-scrollbar="{{false}}">
-        <!-- 规格组 -->
+        <!-- 商品信息 -->
+        <view class="spec-popup__info">
+          <view class="spec-popup__price-row">
+            <text class="spec-popup__price">¥{{specDisplayPrice}}</text>
+            <text class="spec-popup__stock">库存充足</text>
+          </view>
+          <text class="spec-popup__name">{{selectedProduct.name}}</text>
+          <text class="spec-popup__desc">{{selectedProduct.description}}</text>
+        </view>
+
+        <!-- 规格选择区域 -->
+        <scroll-view class="spec-popup__content" scroll-y enhanced show-scrollbar="{{false}}">
+          <!-- 规格组 -->
         <block wx:for="{{specGroups}}" wx:key="group_id" wx:for-item="group">
           <view class="spec-group">
             <view class="spec-group__title">
@@ -380,29 +400,30 @@
         </view>
       </scroll-view>
 
-      <!-- 底部操作栏 -->
-      <view class="spec-popup__footer">
-        <view class="spec-popup__total">
-          <text class="spec-popup__total-label">小计</text>
-          <text class="spec-popup__total-price">¥{{specTotalPrice}}</text>
+        <!-- 底部操作栏 -->
+        <view class="spec-popup__footer">
+          <view class="spec-popup__total">
+            <text class="spec-popup__total-label">小计</text>
+            <text class="spec-popup__total-price">¥{{specTotalPrice}}</text>
+          </view>
+          <view class="spec-popup__actions">
+            <t-button
+              theme="light"
+              size="large"
+              bind:tap="handleAddToCart"
+            >
+              加入购物车
+            </t-button>
+            <t-button
+              theme="primary"
+              size="large"
+              bind:tap="handleBuyNow"
+            >
+              立即购买
+            </t-button>
+          </view>
         </view>
-        <view class="spec-popup__actions">
-          <t-button
-            theme="light"
-            size="large"
-            bind:tap="handleAddToCart"
-          >
-            加入购物车
-          </t-button>
-          <t-button
-            theme="primary"
-            size="large"
-            bind:tap="handleBuyNow"
-          >
-            立即购买
-          </t-button>
-        </view>
-      </view>
+      </block>
     </view>
   </t-popup>
 </view>
