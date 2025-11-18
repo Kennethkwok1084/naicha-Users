@@ -30,99 +30,91 @@
   </view>
 
   <view wx:else class="menu-page__container">
-    <view class="app-bar" style="padding-top: {{headerPaddingTop}}px;">
-      <view class="app-bar__inner" style="height: {{headerToolbarHeight}}px;">
-        <view class="app-bar__left">
-          <t-button
-            variant="text"
-            shape="round"
-            size="small"
-            class="app-bar__icon-btn"
-            bindtap="onGoBack"
-          >
-            <t-icon name="chevron-left" size="20px" />
-          </t-button>
-          <t-button
-            variant="text"
-            shape="round"
-            size="small"
-            class="app-bar__icon-btn"
-            bindtap="onGoHome"
-          >
-            <t-icon name="home" size="20px" />
-          </t-button>
+    <!-- 导航栏占位容器 -->
+    <view style="height: {{navPlaceholderHeight}}px;"></view>
+    
+    <!-- 固定导航栏 -->
+    <view class="header-bar" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
+      <view class="header-bar__content">
+        <view class="header-bar__left">
+          <view class="header-bar__icon-btn" bindtap="onGoBack">
+            <t-icon name="chevron-left" size="40rpx" />
+          </view>
+          <view class="header-bar__icon-btn" bindtap="onGoHome">
+            <t-icon name="home" size="40rpx" />
+          </view>
         </view>
-        <view class="app-bar__center">
+        <view class="header-bar__search">
           <t-search
             placeholder="搜饮品/口味/配料"
             value="{{searchKeyword}}"
             shape="round"
             clearable
-            actionText="搜索"
             bind:change="handleSearchChange"
             bind:focus="handleSearchFocus"
             bind:clear="handleSearchClear"
             bind:submit="handleSearchConfirm"
           />
         </view>
-        <view class="app-bar__right">
-          <view class="app-bar__wechat-placeholder"></view>
-        </view>
-      </view>
-    </view>
-
-    <view class="store-bar">
-      <view class="store-bar__info" hover-class="store-bar__info--hover" bindtap="onShowShopDetail">
-        <t-icon name="location" size="20px" />
-        <view class="store-bar__text">
-          <text class="store-bar__name">{{shopName || '清风茶記'}}</text>
-          <text class="store-bar__address">{{shopAddress || '选择门店可查看地址'}}</text>
-        </view>
-      </view>
-      <view class="store-bar__service">
-        <view wx:if="{{supportsPickup || supportsDelivery}}" class="delivery-mode-switcher">
-          <view
-            wx:if="{{supportsPickup}}"
-            class="delivery-mode-option {{deliveryMode === 'pickup' ? 'delivery-mode-option--active' : ''}}"
-            data-mode="pickup"
-            bindtap="switchDeliveryMode"
-          >
-            自提
-          </view>
-          <view
-            wx:if="{{supportsDelivery}}"
-            class="delivery-mode-option {{deliveryMode === 'delivery' ? 'delivery-mode-option--active' : ''}}"
-            data-mode="delivery"
-            bindtap="switchDeliveryMode"
-          >
-            外送
+        <view class="header-bar__right">
+          <view class="header-bar__more-btn" bindtap="onShowShopDetail">
+            <t-icon name="ellipsis" size="40rpx" />
           </view>
         </view>
-        <text wx:else class="store-bar__service-empty">暂不支持配送/自取</text>
       </view>
     </view>
 
-    <view class="notice-section" bindtap="toggleNotice">
-      <t-notice-bar
-        class="notice-section__bar"
-        prefixIcon="sound"
-        suffixIcon="{{noticeExpanded ? 'chevron-up' : 'chevron-down'}}"
-        content="{{shopAnnouncement || '商家暂无公告'}}"
-        theme="info"
-        marquee="{{currentNoticeMarquee}}"
-      />
-      <view wx:if="{{noticeExpanded}}" class="notice-section__detail">
-        <text class="notice-section__detail-text">{{shopAnnouncement || '暂无公告'}}</text>
+    <view class="store-info">
+      <view class="store-info__header" bindtap="onShowShopDetail">
+        <view class="store-info__main">
+          <t-icon name="location" size="28rpx" color="#333" />
+          <text class="store-info__name">{{shopName || '星汇城店'}}</text>
+        </view>
+        <view class="store-info__actions">
+          <view wx:if="{{supportsPickup || supportsDelivery}}" class="delivery-toggle">
+            <view
+              wx:if="{{supportsPickup}}"
+              class="delivery-toggle__btn {{deliveryMode === 'pickup' ? 'delivery-toggle__btn--active' : ''}}"
+              data-mode="pickup"
+              bindtap="switchDeliveryMode"
+            >
+              自提
+            </view>
+            <view
+              wx:if="{{supportsDelivery}}"
+              class="delivery-toggle__btn {{deliveryMode === 'delivery' ? 'delivery-toggle__btn--active' : ''}}"
+              data-mode="delivery"
+              bindtap="switchDeliveryMode"
+            >
+              外送
+            </view>
+          </view>
+        </view>
       </view>
-    </view>
-
-    <view class="store-extra" wx:if="{{deliveryInfoLines.length}}">
-      <view
-        wx:for="{{deliveryInfoLines}}"
-        wx:key="index"
-        class="store-extra__item {{item.highlight ? 'is-highlight' : ''}}"
-      >
-        {{item.text}}
+      <text class="store-info__address">{{shopAddress || '杭州西湖区文一西路289号'}}</text>
+      
+      <view class="delivery-info" wx:if="{{deliveryInfoExpanded}}">
+        <view class="delivery-info__item">
+          <text class="delivery-info__label">配送范围：</text>
+          <text class="delivery-info__value">门店3公里范围内</text>
+        </view>
+        <view class="delivery-info__item">
+          <text class="delivery-info__label">配送时间：</text>
+          <text class="delivery-info__value">09:00-22:00</text>
+        </view>
+        <view class="delivery-info__item">
+          <text class="delivery-info__label">配送费用：</text>
+          <text class="delivery-info__value">基础运费¥3，满¥25包邮</text>
+        </view>
+        <view class="delivery-info__item">
+          <text class="delivery-info__label">营业时间：</text>
+          <text class="delivery-info__value">07:30-22:30</text>
+        </view>
+      </view>
+      
+      <view class="delivery-info__toggle" bindtap="toggleDeliveryInfo">
+        <text class="delivery-info__toggle-text">{{deliveryInfoExpanded ? '收起' : '展开'}}</text>
+        <t-icon name="{{deliveryInfoExpanded ? 'chevron-up' : 'chevron-down'}}" size="24rpx" color="#7D4500" />
       </view>
     </view>
 
@@ -175,41 +167,29 @@
 
   <view class="cart-bar" wx:if="{{cartHasItems}}">
     <view class="cart-bar__left" bindtap="handleCartPreview">
-      <view class="cart-bar__bag">
-        <t-icon name="cart" size="24px" />
+      <view class="cart-bar__icon">
+        <t-icon name="cart" size="44rpx" color="#7D4500" />
         <t-badge wx:if="{{cartBadgeCount > 0}}" count="{{cartBadgeCount}}" max-count="99" />
       </view>
-      <view class="cart-bar__meta">
+      <view class="cart-bar__info">
         <text class="cart-bar__total">合计 ¥{{cartTotalPriceDisplay}}</text>
-        <text class="cart-bar__hint">{{cartDeliveryHint}}</text>
+        <text class="cart-bar__hint">预计到手价 ¥{{cartFinalPriceDisplay}}</text>
       </view>
     </view>
-    <t-button
-      class="cart-bar__btn"
-      theme="primary"
-      size="large"
-      shape="round"
-      bindtap="goCheckout"
-    >
-      去结算
-    </t-button>
+    <view class="cart-bar__btn" bindtap="goCheckout">
+      <text>去结算</text>
+    </view>
   </view>
-  <view class="cart-bar cart-bar--empty" wx:else>
-    <view class="cart-bar__left" bindtap="handleCartPreview">
-      <view class="cart-bar__bag">
-        <t-icon name="cart" size="24px" />
+  <view class="cart-bar" wx:else>
+    <view class="cart-bar__left">
+      <view class="cart-bar__icon">
+        <t-icon name="cart" size="44rpx" color="#999" />
       </view>
-      <text class="cart-bar__hint">还没选商品～</text>
+      <text class="cart-bar__empty-hint">还没选商品～</text>
     </view>
-    <t-button
-      class="cart-bar__btn"
-      theme="primary"
-      size="large"
-      shape="round"
-      disabled
-    >
-      去结算
-    </t-button>
+    <view class="cart-bar__btn cart-bar__btn--disabled">
+      <text>去结算</text>
+    </view>
   </view>
 
   <t-popup
@@ -222,7 +202,7 @@
       <view class="shop-detail__header">
         <text class="shop-detail__title">{{shopName || '清风茶記'}}</text>
         <view class="shop-detail__close" bindtap="closeShopDetail">
-          <t-icon name="close" size="20px" color="#999" />
+          <t-icon name="close" size="40rpx" color="#999" />
         </view>
       </view>
       <view wx:if="{{shopDetailLoading}}" class="shop-detail__skeleton">
@@ -267,7 +247,7 @@
         <view class="shop-detail__actions">
           <view class="shop-detail__btn shop-detail__btn--primary" bindtap="onNavigateToShop">到店导航</view>
           <view class="shop-detail__btn shop-detail__btn--secondary" bindtap="onCallShop" aria-label="拨打电话">
-            <t-icon name="call" size="24px" color="#666" />
+            <t-icon name="call" size="48rpx" color="#666" />
           </view>
         </view>
       </view>
@@ -408,15 +388,19 @@
           </view>
           <view class="spec-popup__actions">
             <t-button
+              class="spec-popup__btn spec-popup__btn--secondary"
               theme="light"
               size="large"
+              block
               bind:tap="handleAddToCart"
             >
               加入购物车
             </t-button>
             <t-button
+              class="spec-popup__btn spec-popup__btn--primary"
               theme="primary"
               size="large"
+              block
               bind:tap="handleBuyNow"
             >
               立即购买

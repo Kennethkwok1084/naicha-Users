@@ -75,11 +75,16 @@ Component({
         success: (res) => {
           const isAndroid = res.platform === 'android'
           const isDevtools = res.platform === 'devtools'
+          // 将 px 转换为 rpx：在小程序中，1px = 2rpx（在 iPhone 6 基准下）
+          const rightPadding = (res.windowWidth - rect.left) * 2
+          const leftWidth = (res.windowWidth - rect.left) * 2
+          const safeAreaTop = res.safeArea.top * 2
+          
           that.setData({
             ios: !isAndroid,
-            innerPaddingRight: `padding-right: ${res.windowWidth - rect.left}px`,
-            leftWidth: `width: ${res.windowWidth - rect.left }px`,
-            safeAreaTop: isDevtools || isAndroid ? `height: calc(var(--height) + ${res.safeArea.top}px); padding-top: ${res.safeArea.top}px` : ``
+            innerPaddingRight: `padding-right: ${rightPadding}rpx`,
+            leftWidth: `width: ${leftWidth}rpx`,
+            safeAreaTop: isDevtools || isAndroid ? `height: calc(var(--height) + ${safeAreaTop}rpx); padding-top: ${safeAreaTop}rpx` : ``
           })
         }
       })

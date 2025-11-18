@@ -100,9 +100,11 @@ Component({
     deliveryMode: 'pickup',
     supportsPickup: true,
     supportsDelivery: true,
-    headerPaddingTop: 32,
-    headerToolbarHeight: 44,
+    statusBarHeight: 20,
+    navBarHeight: 44,
+    navPlaceholderHeight: 64,
     searchKeyword: '',
+    deliveryInfoExpanded: false,
     noticeExpanded: false,
     noticeMarquee: { speed: 40, loop: -1 } as any,
     currentNoticeMarquee: { speed: 40, loop: -1 } as any,
@@ -137,6 +139,7 @@ Component({
     // 购物车浮层
     cartTotalQuantity: 0,
     cartTotalPriceDisplay: '0.00',
+    cartFinalPriceDisplay: '0.00',
     cartBadgeCount: 0,
     cartHasItems: false,
     cartDeliveryHint: '预计到手价',
@@ -218,6 +221,11 @@ Component({
         fields: {
           cartTotalQuantity: 'totalQuantity',
           cartTotalPriceDisplay: (store: any) => store.totalPrice.toFixed(2),
+          cartFinalPriceDisplay: (store: any) => {
+            const total = store.totalPrice
+            const deliveryFee = this.data.deliveryMode === 'delivery' ? (this.data.deliveryFee || 0) : 0
+            return (total + deliveryFee).toFixed(2)
+          },
           cartBadgeCount: (store: any) => Math.min(store.totalQuantity, 99),
           cartHasItems: (store: any) => store.totalQuantity > 0
         },
@@ -225,30 +233,36 @@ Component({
       })
     },
 
-    // 计算导航占位
+    // 计算导航栏高度和位置（与胶囊对齐）
     measureNavigationBar(this: any) {
       try {
-        const systemInfo = wx.getSystemInfoSync()
-        const statusBarHeight = systemInfo.statusBarHeight || 0
-        const menuButtonRect = wx.getMenuButtonBoundingClientRect ? wx.getMenuButtonBoundingClientRect() : null
-        let headerPaddingTop = statusBarHeight + 8
-        let headerToolbarHeight = 44
-
-        if (menuButtonRect) {
-          const topGap = menuButtonRect.top - statusBarHeight
-          headerToolbarHeight = menuButtonRect.height + topGap * 2
-          headerPaddingTop = statusBarHeight + topGap
-        }
+        // 获取状态栏高度（距上）
+        const statusBarHeight = wx.getSystemInfoSync().statusBarHeight || 20
+        
+        // 获取胶囊按钮位置信息
+        const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
+        
+        // 计算导航栏高度：胶囊高度 + 胶囊上下边距
+        // 胶囊上下边距相等，通过 (胶囊top - 状态栏高度) 得到上边距
+        const navBarHeight = menuButtonInfo.height + (menuButtonInfo.top - statusBarHeight) * 2
+        
+        // 占位容器高度 = 导航栏高度 + 状态栏高度
+        const navPlaceholderHeight = navBarHeight + statusBarHeight
 
         this.setData({
-          headerPaddingTop,
-          headerToolbarHeight
+          statusBarHeight,
+          navBarHeight,
+          navPlaceholderHeight
         })
       } catch (error) {
         console.error('获取导航栏信息失败:', error)
+        // 设置默认值
+        const statusBarHeight = 20
+        const navBarHeight = 44
         this.setData({
-          headerPaddingTop: 32,
-          headerToolbarHeight: 44
+          statusBarHeight,
+          navBarHeight,
+          navPlaceholderHeight: statusBarHeight + navBarHeight
         })
       }
     },
@@ -490,13 +504,33 @@ Component({
         specSelectedOptionIds[gid] = currentSelection.map((opt: MenuSpecOption) => String(opt.option_id))
       }
       
-      // 更新specGroups，添加_selected标记
+      // 更新specGroups，添加_selected标记，确保返回纯对象
       const specGroups = this.data.specGroups.map((g: MenuSpecGroup) => {
-        if (g.group_id !== gid) return g
+        if (g.group_id !== gid) {
+          return {
+            group_id: g.group_id,
+            name: g.name,
+            sort_order: g.sort_order,
+            options: g.options.map((opt: any) => ({
+              option_id: opt.option_id,
+              name: opt.name,
+              price_modifier: opt.price_modifier,
+              inventory_status: opt.inventory_status,
+              sort_order: opt.sort_order,
+              _selected: opt._selected || false
+            }))
+          }
+        }
         return {
-          ...g,
+          group_id: g.group_id,
+          name: g.name,
+          sort_order: g.sort_order,
           options: g.options.map((opt: MenuSpecOption) => ({
-            ...opt,
+            option_id: opt.option_id,
+            name: opt.name,
+            price_modifier: opt.price_modifier,
+            inventory_status: opt.inventory_status,
+            sort_order: opt.sort_order,
             _selected: behavior.type === 'single' 
               ? opt.option_id === oid
               : specSelectedOptionIds[gid].includes(String(opt.option_id))
@@ -597,11 +631,17 @@ Component({
           specSelectedOptionIds[group.group_id] = []
         }
         
-        // 添加 _selected 标记
+        // 添加 _selected 标记，确保返回纯对象
         return {
-          ...group,
+          group_id: group.group_id,
+          name: group.name,
+          sort_order: group.sort_order,
           options: group.options.map((opt: MenuSpecOption) => ({
-            ...opt,
+            option_id: opt.option_id,
+            name: opt.name,
+            price_modifier: opt.price_modifier,
+            inventory_status: opt.inventory_status,
+            sort_order: opt.sort_order,
             _selected: defaultSelectedId ? opt.option_id === Number(defaultSelectedId) : false
           }))
         }
@@ -1016,6 +1056,12 @@ Component({
       this.setData({
         noticeExpanded: nextExpanded,
         currentNoticeMarquee: nextExpanded ? false : noticeMarquee
+      })
+    },
+
+    toggleDeliveryInfo(this: any) {
+      this.setData({
+        deliveryInfoExpanded: !this.data.deliveryInfoExpanded
       })
     },
 

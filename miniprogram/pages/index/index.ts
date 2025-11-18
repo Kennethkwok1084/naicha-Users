@@ -4,27 +4,24 @@ const app = getApp<IAppOption>()
 
 Component({
   data: {
-    // 轮播图数据 (使用占位符,后续替换为真实图片)
+    // 轮播图数据
     banners: [
       {
         id: 1,
-        image_url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="750" height="420"%3E%3Cdefs%3E%3ClinearGradient id="a" x1="0%" y1="0%" x2="100%" y2="100%"%3E%3Cstop offset="0%" style="stop-color:%23667eea"/%3E%3Cstop offset="100%" style="stop-color:%23764ba2"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="750" height="420" fill="url(%23a)"/%3E%3Ctext x="375" y="210" font-size="48" fill="white" text-anchor="middle" font-family="Arial"%3E欢迎光临%3C/text%3E%3C/svg%3E',
-        link: '',
-        title: '欢迎光临'
+        title: '新品上市：姜黄拿铁',
+        link: ''
       },
       {
         id: 2,
-        image_url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="750" height="420"%3E%3Cdefs%3E%3ClinearGradient id="b" x1="0%" y1="0%" x2="100%" y2="100%"%3E%3Cstop offset="0%" style="stop-color:%23f093fb"/%3E%3Cstop offset="100%" style="stop-color:%234facfe"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="750" height="420" fill="url(%23b)"/%3E%3Ctext x="375" y="210" font-size="48" fill="white" text-anchor="middle" font-family="Arial"%3E新品上市%3C/text%3E%3C/svg%3E',
-        link: '',
-        title: '新品上市'
+        title: '每日特惠 限时优惠',
+        link: ''
       },
       {
         id: 3,
-        image_url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="750" height="420"%3E%3Cdefs%3E%3ClinearGradient id="c" x1="0%" y1="0%" x2="100%" y2="100%"%3E%3Cstop offset="0%" style="stop-color:%23fa709a"/%3E%3Cstop offset="100%" style="stop-color:%23fee140"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="750" height="420" fill="url(%23c)"/%3E%3Ctext x="375" y="210" font-size="48" fill="white" text-anchor="middle" font-family="Arial"%3E特惠活动%3C/text%3E%3C/svg%3E',
-        link: '',
-        title: '特惠活动'
+        title: '会员专属福利',
+        link: ''
       }
-    ] as Banner[],
+    ] as SimpleBanner[],
 
     // 功能区数据 (使用 emoji 占位符)
     functions: [
@@ -51,21 +48,27 @@ Component({
       }
     ] as FunctionItem[],
 
-    // 广告轮播数据 (使用占位符)
+    // 广告轮播数据（中间轮播）
     ads: [
       {
         id: 1,
-        image_url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="686" height="200"%3E%3Cdefs%3E%3ClinearGradient id="d" x1="0%" y1="0%" x2="100%" y2="0%"%3E%3Cstop offset="0%" style="stop-color:%23ff6b6b"/%3E%3Cstop offset="100%" style="stop-color:%23feca57"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="686" height="200" fill="url(%23d)" rx="16"/%3E%3Ctext x="343" y="110" font-size="36" fill="white" text-anchor="middle" font-family="Arial"%3E限时优惠%3C/text%3E%3C/svg%3E',
-        link: '',
-        title: '限时优惠'
+        title: '咖啡配件特惠',
+        subtitle: '买咖啡机送咖啡豆',
+        link: ''
       },
       {
         id: 2,
-        image_url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="686" height="200"%3E%3Cdefs%3E%3ClinearGradient id="e" x1="0%" y1="0%" x2="100%" y2="0%"%3E%3Cstop offset="0%" style="stop-color:%235f27cd"/%3E%3Cstop offset="100%" style="stop-color:%2300d2ff"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="686" height="200" fill="url(%23e)" rx="16"/%3E%3Ctext x="343" y="110" font-size="36" fill="white" text-anchor="middle" font-family="Arial"%3E会员专享%3C/text%3E%3C/svg%3E',
-        link: '',
-        title: '会员专享'
+        title: '会员专享',
+        subtitle: '每月免费赠饮',
+        link: ''
+      },
+      {
+        id: 3,
+        title: '新品推荐',
+        subtitle: '限时尝鲜价 8折优惠',
+        link: ''
       }
-    ] as Banner[],
+    ] as PromoCard[],
 
     // 集杯卡数据
     loyaltyCard: {
@@ -150,12 +153,17 @@ Component({
       }
     },
 
-    // 广告点击
+    // 广告轮播点击
     onAdTap(e: WechatMiniprogram.BaseEvent) {
       const { link } = e.currentTarget.dataset
       if (link) {
         const that = this as any
         that.openUrl(link)
+      } else {
+        wx.showToast({
+          title: '敬请期待',
+          icon: 'none'
+        })
       }
     },
 

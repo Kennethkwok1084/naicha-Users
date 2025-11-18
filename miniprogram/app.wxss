@@ -36,6 +36,13 @@ page {
   --border-radius-lg: 24rpx;
   --border-radius-round: 999rpx;
 
+  /* 图标尺寸 - 统一管理，适配不同机型 */
+  --icon-size-xs: 32rpx;
+  --icon-size-sm: 40rpx;
+  --icon-size-md: 48rpx;
+  --icon-size-lg: 56rpx;
+  --icon-size-xl: 64rpx;
+
   /* 基础样式 */
   background-color: var(--color-background);
   color: var(--color-text);

@@ -27,32 +27,44 @@ page {
 
 /* 轮播图区域 */
 .banner-section {
-  margin: 0 24rpx 24rpx 24rpx;
+  margin: 0 32rpx 24rpx 32rpx;
 }
 
 .banner-swiper {
   width: 100%;
-  height: 420rpx;
-  border-radius: 16rpx;
+  height: 274rpx;
+  border-radius: 24rpx;
   overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
 }
 
-.banner-image {
+.banner-content {
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.banner-title {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: #ffffff;
+  text-align: center;
 }
 
 /* 功能区 */
 .function-section {
   display: flex;
   justify-content: space-around;
-  align-items: center;
-  padding: 32rpx 24rpx;
-  margin: 0 24rpx 24rpx;
+  align-items: flex-start;
+  padding: 32rpx 32rpx;
+  margin: 0 32rpx 24rpx;
   background-color: #ffffff;
-  border-radius: 16rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
 }
 
 .function-item {
@@ -60,15 +72,23 @@ page {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1;
+  gap: 16rpx;
+}
+
+.function-icon-circle {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
 }
 
 .function-icon-emoji {
-  font-size: 80rpx;
-  line-height: 96rpx;
-  margin-bottom: 16rpx;
-  display: block;
-  text-align: center;
+  font-size: 48rpx;
+  line-height: 1;
 }
 
 .function-name {
@@ -77,48 +97,72 @@ page {
   font-weight: 500;
 }
 
-/* 广告轮播 */
+/* 中间轮播广告 */
 .ad-section {
-  margin: 0 24rpx 24rpx 24rpx;
+  margin: 0 32rpx 24rpx 32rpx;
 }
 
 .ad-swiper {
   width: 100%;
-  height: 200rpx;
-  border-radius: 16rpx;
+  height: 310rpx;
+  border-radius: 24rpx;
   overflow: hidden;
 }
 
-.ad-image {
+.ad-card {
   width: 100%;
   height: 100%;
-  background-color: #e5e5e5;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+  padding: 32rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.ad-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.ad-title {
+  font-size: 36rpx;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.ad-subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* 集杯卡 */
 .loyalty-card-section {
-  padding: 0 24rpx;
-  margin-bottom: 24rpx;
+  padding: 0 32rpx;
+  margin-bottom: 160rpx;
 }
 
 .loyalty-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16rpx;
+  border-radius: 24rpx;
   padding: 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.3);
 }
 
 .card-header {
   display: flex;
   flex-direction: column;
-  margin-bottom: 24rpx;
+  gap: 8rpx;
+  margin-bottom: 32rpx;
 }
 
 .card-title {
   font-size: 36rpx;
-  font-weight: bold;
+  font-weight: 500;
   color: #ffffff;
-  margin-bottom: 8rpx;
 }
 
 .card-subtitle {
@@ -130,8 +174,8 @@ page {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24rpx;
-  padding: 0 8rpx;
+  margin-bottom: 32rpx;
+  padding: 0 4rpx;
 }
 
 .cup-item {
@@ -140,29 +184,36 @@ page {
   justify-content: center;
 }
 
+.cup-icon-wrapper {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
 .cup-icon {
-  font-size: 48rpx;
+  font-size: 40rpx;
   line-height: 1;
-  display: block;
-  opacity: 0.4;
   transition: all 0.3s ease;
-  filter: grayscale(100%);
 }
 
 .cup-icon.filled {
   opacity: 1;
-  transform: scale(1.2);
   filter: grayscale(0%);
 }
 
 .cup-icon.empty {
   opacity: 0.3;
+  filter: grayscale(100%);
 }
 
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.card-status {
+  text-align: center;
+  margin-bottom: 24rpx;
+  opacity: 0.95;
 }
 
 .cup-count {
@@ -171,114 +222,32 @@ page {
   font-weight: 500;
 }
 
+.card-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .redeem-btn {
-  padding: 16rpx 32rpx;
-  border-radius: 999rpx;
+  padding: 18rpx 64rpx;
+  border-radius: 40rpx;
   font-size: 28rpx;
   font-weight: 500;
-  border: none;
+  border: 2rpx solid rgba(255, 255, 255, 0.5);
+  background-color: transparent;
+  color: #ffffff;
 }
 
 .redeem-btn.active {
   background-color: #ffffff;
   color: #667eea;
+  border-color: transparent;
 }
 
 .redeem-btn.disabled {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: transparent;
   color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* 店铺信息 */
-.shop-info-section {
-  padding: 0 24rpx;
-}
 
-.shop-info-card {
-  background-color: #ffffff;
-  border-radius: 16rpx;
-  padding: 32rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
-}
-
-.shop-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24rpx;
-  padding-bottom: 24rpx;
-  border-bottom: 1rpx solid #e5e5e5;
-}
-
-.shop-name {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333333;
-}
-
-.shop-status {
-  display: flex;
-  align-items: center;
-  padding: 8rpx 16rpx;
-  border-radius: 999rpx;
-}
-
-.shop-status.open {
-  background-color: #e7f9ee;
-}
-
-.shop-status.closed {
-  background-color: #fee;
-}
-
-.status-dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 50%;
-  margin-right: 8rpx;
-}
-
-.shop-status.open .status-dot {
-  background-color: #07c160;
-}
-
-.shop-status.closed .status-dot {
-  background-color: #fa5151;
-}
-
-.status-text {
-  font-size: 24rpx;
-  font-weight: 500;
-}
-
-.shop-status.open .status-text {
-  color: #07c160;
-}
-
-.shop-status.closed .status-text {
-  color: #fa5151;
-}
-
-.shop-details {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-}
-
-.detail-icon {
-  font-size: 32rpx;
-  margin-right: 16rpx;
-  width: 40rpx;
-  text-align: center;
-}
-
-.detail-text {
-  font-size: 28rpx;
-  color: #666666;
-  line-height: 1.6;
-}

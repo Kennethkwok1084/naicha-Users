@@ -8,6 +8,21 @@ interface Banner {
   title?: string;
 }
 
+// 简化的轮播图类型
+interface SimpleBanner {
+  id: number;
+  title: string;
+  link?: string;
+}
+
+// 促销卡片类型
+interface PromoCard {
+  id: number;
+  title: string;
+  subtitle: string;
+  link?: string;
+}
+
 interface FunctionItem {
   id: string;
   name: string;
@@ -33,9 +48,9 @@ interface ShopInfo {
 }
 
 interface HomePageData {
-  banners: Banner[];
+  banners: SimpleBanner[];
   functions: FunctionItem[];
-  ads: Banner[];
+  promos: PromoCard[];
   loyaltyCard: LoyaltyCard | null;
   shopInfo: ShopInfo;
 }

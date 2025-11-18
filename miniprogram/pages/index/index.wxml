@@ -21,96 +21,85 @@
           interval="{{3000}}" 
           duration="{{500}}"
           circular="{{true}}"
+          indicator-color="rgba(255, 255, 255, 0.5)"
+          indicator-active-color="rgba(255, 255, 255, 0.9)"
         >
           <swiper-item wx:for="{{banners}}" wx:key="id">
-            <image class="banner-image" src="{{item.image_url}}" mode="aspectFill" bindtap="onBannerTap" data-link="{{item.link}}" />
+            <view class="banner-content">
+              <text class="banner-title">{{item.title}}</text>
+            </view>
           </swiper-item>
         </swiper>
       </view>
 
-    <!-- 功能区 -->
-    <view class="function-section">
-      <view 
-        class="function-item" 
-        wx:for="{{functions}}" 
-        wx:key="id"
-        bindtap="onFunctionTap"
-        data-path="{{item.path}}"
-        data-type="{{item.type}}"
-      >
-        <text class="function-icon-emoji">{{item.icon}}</text>
-        <text class="function-name">{{item.name}}</text>
-      </view>
-    </view>
-
-    <!-- 广告轮播 -->
-    <view class="ad-section" wx:if="{{ads.length > 0}}">
-      <swiper 
-        class="ad-swiper" 
-        indicator-dots="{{true}}" 
-        autoplay="{{true}}" 
-        interval="{{4000}}"
-        circular="{{true}}"
-      >
-        <swiper-item wx:for="{{ads}}" wx:key="id">
-          <image class="ad-image" src="{{item.image_url}}" mode="aspectFill" bindtap="onAdTap" data-link="{{item.link}}" />
-        </swiper-item>
-      </swiper>
-    </view>
-
-    <!-- 集杯卡 -->
-    <view class="loyalty-card-section" wx:if="{{loyaltyCard}}">
-      <view class="loyalty-card">
-        <view class="card-header">
-          <text class="card-title">集杯卡</text>
-          <text class="card-subtitle">集满{{loyaltyCard.reward_threshold}}杯可兑换</text>
-        </view>
-        <view class="cup-progress">
-          <view class="cup-item" wx:for="{{loyaltyCard.reward_threshold}}" wx:key="index">
-            <text class="cup-icon {{index < loyaltyCard.current_cups ? 'filled' : 'empty'}}">
-              {{index < loyaltyCard.current_cups ? '🥤' : '⚪'}}
-            </text>
+      <!-- 功能区 -->
+      <view class="function-section">
+        <view 
+          class="function-item" 
+          wx:for="{{functions}}" 
+          wx:key="id"
+          bindtap="onFunctionTap"
+          data-path="{{item.path}}"
+          data-type="{{item.type}}"
+        >
+          <view class="function-icon-circle">
+            <text class="function-icon-emoji">{{item.icon}}</text>
           </view>
-        </view>
-        <view class="card-footer">
-          <text class="cup-count">已集 {{loyaltyCard.current_cups}}/{{loyaltyCard.reward_threshold}} 杯</text>
-          <button 
-            class="redeem-btn {{loyaltyCard.is_redeemable ? 'active' : 'disabled'}}" 
-            bindtap="onRedeemTap"
-            disabled="{{!loyaltyCard.is_redeemable}}"
-          >
-            {{loyaltyCard.is_redeemable ? '立即兑换' : '继续努力'}}
-          </button>
+          <text class="function-name">{{item.name}}</text>
         </view>
       </view>
-    </view>
 
-    <!-- 店铺情况 -->
-    <view class="shop-info-section">
-      <view class="shop-info-card">
-        <view class="shop-header">
-          <text class="shop-name">{{shopInfo.name}}</text>
-          <view class="shop-status {{shopInfo.status}}">
-            <text class="status-dot"></text>
-            <text class="status-text">{{shopInfo.status === 'open' ? '营业中' : '已打烊'}}</text>
+      <!-- 中间轮播广告 -->
+      <view class="ad-section" wx:if="{{ads.length > 0}}">
+        <swiper 
+          class="ad-swiper" 
+          indicator-dots="{{true}}" 
+          autoplay="{{true}}" 
+          interval="{{4000}}"
+          duration="{{500}}"
+          circular="{{true}}"
+          indicator-color="rgba(0, 0, 0, 0.3)"
+          indicator-active-color="rgba(102, 126, 234, 0.8)"
+        >
+          <swiper-item wx:for="{{ads}}" wx:key="id">
+            <view class="ad-card" bindtap="onAdTap" data-link="{{item.link}}">
+              <view class="ad-content">
+                <text class="ad-title">{{item.title}}</text>
+                <text class="ad-subtitle">{{item.subtitle}}</text>
+              </view>
+            </view>
+          </swiper-item>
+        </swiper>
+      </view>
+
+      <!-- 集杯卡 -->
+      <view class="loyalty-card-section" wx:if="{{loyaltyCard}}">
+        <view class="loyalty-card">
+          <view class="card-header">
+            <text class="card-title">集杯卡</text>
+            <text class="card-subtitle">集满{{loyaltyCard.reward_threshold}}杯可兑换</text>
           </view>
-        </view>
-        <view class="shop-details">
-          <view class="detail-item">
-            <text class="detail-icon">📍</text>
-            <text class="detail-text">{{shopInfo.address}}</text>
+          <view class="cup-progress">
+            <view class="cup-item" wx:for="{{loyaltyCard.reward_threshold}}" wx:key="index">
+              <view class="cup-icon-wrapper">
+                <text class="cup-icon {{index < loyaltyCard.current_cups ? 'filled' : 'empty'}}">☕</text>
+              </view>
+            </view>
           </view>
-          <view class="detail-item">
-            <text class="detail-icon">📞</text>
-            <text class="detail-text">{{shopInfo.phone}}</text>
+          <view class="card-status">
+            <text class="cup-count">已集 {{loyaltyCard.current_cups}}/{{loyaltyCard.reward_threshold}} 杯</text>
           </view>
-          <view class="detail-item">
-            <text class="detail-icon">🕐</text>
-            <text class="detail-text">{{shopInfo.business_hours}}</text>
+          <view class="card-footer">
+            <button 
+              class="redeem-btn {{loyaltyCard.is_redeemable ? 'active' : 'disabled'}}" 
+              bindtap="onRedeemTap"
+              disabled="{{!loyaltyCard.is_redeemable}}"
+            >
+              {{loyaltyCard.is_redeemable ? '立即兑换' : '继续努力'}}
+            </button>
           </view>
         </view>
       </view>
-    </view>
 
   </view>
 </scroll-view>
