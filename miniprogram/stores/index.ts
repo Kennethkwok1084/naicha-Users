@@ -2,3 +2,4 @@
 export { shopStore } from './shopStore'
 export { menuStore } from './menuStore'
 export { cartStore } from './cartStore'
+export { userStore } from './userStore'

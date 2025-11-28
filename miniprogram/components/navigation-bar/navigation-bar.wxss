@@ -1,11 +1,6 @@
 .weui-navigation-bar {
-  --weui-FG-0:rgba(0,0,0,.9);
-  --height: 88rpx;  /* 从 44px 改为 88rpx (44 * 2) */
-  --left: 32rpx;    /* 从 16px 改为 32rpx (16 * 2) */
-  --icon-size: 48rpx;  /* 图标统一尺寸 */
-  --button-padding: 22rpx 36rpx 22rpx 32rpx;  /* 按钮内边距 */
   overflow: visible;
-  color: var(--weui-FG-0);
+  color: rgba(0,0,0,.9);
   flex: none;
   position: absolute;
   top: 0;
@@ -27,7 +22,7 @@
   position: relative;
   top: 0;
   left: 0;
-  height: calc(var(--height) + env(safe-area-inset-top));
+  height: calc(88rpx + env(safe-area-inset-top));
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -53,32 +48,48 @@
 
 .weui-navigation-bar__left {
   position: relative;
-  padding-left: var(--left);
+  padding-left: 32rpx;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   height: 100%;
   box-sizing: border-box;
 }
 
+.weui-navigation-bar__buttons {
+  display: flex;
+  align-items: center;
+}
+
 .weui-navigation-bar__btn_goback_wrapper {
-  padding: var(--button-padding);
-  margin: -22rpx -36rpx -22rpx -32rpx;  /* 负边距扩大点击区域 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  transition: background-color 0.2s;
 }
 
 .weui-navigation-bar__btn_goback_wrapper.weui-active {
-  opacity: 0.5;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.weui-navigation-bar__button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .weui-navigation-bar__btn_goback {
-  font-size: 24rpx;  /* 从 12px 改为 24rpx */
-  width: var(--icon-size);  /* 使用变量 */
-  height: var(--icon-size);
-  -webkit-mask: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24' viewBox='0 0 12 24'%3E  %3Cpath fill-opacity='.9' fill-rule='evenodd' d='M10 19.438L8.955 20.5l-7.666-7.79a1.02 1.02 0 0 1 0-1.42L8.955 3.5 10 4.563 2.682 12 10 19.438z'/%3E%3C/svg%3E") no-repeat 50% 50%;
-  mask: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24' viewBox='0 0 12 24'%3E  %3Cpath fill-opacity='.9' fill-rule='evenodd' d='M10 19.438L8.955 20.5l-7.666-7.79a1.02 1.02 0 0 1 0-1.42L8.955 3.5 10 4.563 2.682 12 10 19.438z'/%3E%3C/svg%3E") no-repeat 50% 50%;
-  -webkit-mask-size: cover;
-  mask-size: cover;
-  background-color: var(--weui-FG-0);
+  width: 20rpx;
+  height: 20rpx;
+  border-left: 3rpx solid currentColor;
+  border-bottom: 3rpx solid currentColor;
+  transform: rotate(45deg);
+  margin-right: -4rpx;
 }
 
 .weui-navigation-bar__center {

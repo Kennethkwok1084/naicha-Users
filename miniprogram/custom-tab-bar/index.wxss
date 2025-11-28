@@ -1,6 +1,6 @@
 /* custom-tab-bar/index.wxss */
 
-/* 强制 TabBar 固定在底部 */
+/* 强制 TabBar 固定在底部并适配安全区域 */
 :host {
   position: fixed !important;
   bottom: 0 !important;
@@ -19,6 +19,9 @@
   z-index: 1001;
   background: #ffffff;
   box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.08);
+  /* 添加底部安全区域内边距 */
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* 覆盖 TDesign 默认样式 */
@@ -36,11 +39,12 @@
   padding: 12rpx 16rpx !important;
   margin: 0 !important;
   height: auto !important;
+  min-height: 100rpx !important;
 }
 
 .t-tab-bar-item__icon {
   margin-bottom: 4rpx !important;
-  font-size: 44rpx !important;
+  font-size: 48rpx !important;
   color: #999999 !important;
 }
 

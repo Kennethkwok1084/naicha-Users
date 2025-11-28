@@ -64,10 +64,18 @@ export function request<T = any>(options: RequestOptions): Promise<ApiResponse<T
       'Content-Type': 'application/json',
       ...header
     };
+    
+    // 为创建订单请求自动添加幂等性键
+    if (method === 'POST' && url.includes('/orders') && !url.includes('/calculate')) {
+      headers['Idempotency-Key'] = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      if (DEBUG) {
+        console.log('[Request] 添加幂等性键:', headers['Idempotency-Key']);
+      }
+    }
 
     // 添加认证信息
     if (needAuth) {
-      const token = getStorage<string>('access_token');
+      const token = getStorage<string>('access_token') || getStorage<string>('token');
       const guestSession = getStorage<string>('guest_session_id');
       
       if (token) {
@@ -123,16 +131,29 @@ export function request<T = any>(options: RequestOptions): Promise<ApiResponse<T
             title: '请先登录',
             icon: 'none'
           });
-          // 可以跳转到登录页
-          // wx.navigateTo({ url: '/pages/login/login' });
-          reject(new Error('未授权'));
+          reject({ statusCode: res.statusCode, data: res.data });
+        } else if (res.statusCode === 422) {
+          // 验证错误，打印详细信息
+          console.error('[Request] 422 验证错误:', res.data);
+          if (DEBUG) {
+            console.error('[Request] 请求数据:', data);
+          }
+          wx.showToast({
+            title: '数据格式错误',
+            icon: 'none'
+          });
+          reject({ statusCode: res.statusCode, data: res.data });
         } else {
           // 其他 HTTP 错误
+          console.error(`[Request] HTTP ${res.statusCode}:`, res.data);
+          if (DEBUG) {
+            console.error('[Request] 请求数据:', data);
+          }
           wx.showToast({
             title: `请求失败 (${res.statusCode})`,
             icon: 'none'
           });
-          reject(new Error(`HTTP ${res.statusCode}`));
+          reject({ statusCode: res.statusCode, data: res.data });
         }
       },
       fail: (error) => {

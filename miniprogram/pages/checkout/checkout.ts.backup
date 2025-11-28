@@ -1,0 +1,270 @@
+import { createPageWithAnalytics } from '../../utils/page-analytics';
+import { createStoreBindings } from 'mobx-miniprogram-bindings';
+import { cartStore } from '../../stores/cartStore';
+import { shopStore } from '../../stores/shopStore';
+import { userStore } from '../../stores/index';
+import Toast from 'tdesign-miniprogram/toast/index';
+
+createPageWithAnalytics({
+  data: {
+    deliveryType: 'pickup',
+    address: null as any,
+    notes: '',
+    tempNotes: '',
+    notesDialogVisible: false,
+    couponText: '暂无可用',
+    deliveryFee: '0.00' as any,
+    discountAmount: '0.00' as any,
+    finalPrice: '0.00' as any,
+    submitting: false,
+    cartItems: [] as any[],
+    estimatedPickupTime: '10分钟',
+    items: [] as any[],
+    totalPrice: '0.00' as any,
+    totalCount: 0,
+    shopInfo: null as any,
+    userInfo: null as any,
+    token: null as any,
+  },
+
+  cartBindings: null as any,
+  shopBindings: null as any,
+  userBindings: null as any,
+
+  onLoad() {
+    console.log('=== 结算页 onLoad ===');
+    this.initStoreBindings();
+    console.log('购物车初始状态 - items:', this.data.items);
+    console.log('购物车初始状态 - totalPrice:', this.data.totalPrice);
+    this.checkLogin();
+    this.initData();
+  },
+
+  onUnload() {
+    if (this.cartBindings) {
+      this.cartBindings.destroyStoreBindings();
+    }
+    if (this.shopBindings) {
+      this.shopBindings.destroyStoreBindings();
+    }
+    if (this.userBindings) {
+      this.userBindings.destroyStoreBindings();
+    }
+  },
+
+  initStoreBindings() {
+    this.cartBindings = createStoreBindings(this, {
+      store: cartStore,
+      fields: {
+        items: 'items',
+        totalPrice: 'totalPrice',
+        totalCount: 'totalQuantity',
+      },
+      actions: {
+        clearCart: 'clearAll',
+      },
+    });
+
+    this.shopBindings = createStoreBindings(this, {
+      store: shopStore,
+      fields: {
+        shopInfo: (store: any) => ({
+          name: store.shopName,
+          address: store.shopAddress,
+          phone: store.shopPhone,
+        }),
+      },
+      actions: [],
+    });
+
+    this.userBindings = createStoreBindings(this, {
+      store: userStore,
+      fields: ['userInfo', 'token'],
+      actions: [],
+    });
+  },
+
+  checkLogin() {
+    if (!this.data.token) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请先登录',
+        theme: 'warning',
+      });
+    }
+  },
+
+  initData() {
+    this.updateCartDisplay();
+  },
+
+  onShow() {
+    console.log('=== 结算页 onShow ===');
+    console.log('购物车当前状态 - items:', this.data.items);
+    console.log('购物车当前状态 - totalPrice:', this.data.totalPrice);
+    this.calculatePrice();
+  },
+
+  updateCartDisplay() {
+    const items = this.data.items || [];
+    console.log('购物车商品数量:', items.length, '商品详情:', items);
+    const cartItems = items.map((item: any) => {
+      const basePrice = item.base_price || 0;
+      const specsPrice = (item.selected_specs || []).reduce((sum: number, spec: any) => sum + (spec.price_modifier || 0), 0);
+      const itemTotalPrice = basePrice + specsPrice;
+      
+      return {
+        ...item,
+        name: item.product_name || '未知商品',
+        price: itemTotalPrice.toFixed(2),
+        image: item.image || 'https://tdesign.gtimg.com/mobile/demos/example1.png',
+        specs: (item.selected_specs || []).map((s: any) => s.option_name).join('/') || '默认',
+      };
+    });
+    this.setData({ cartItems });
+  },
+
+  onDeliveryTypeChange(e: any) {
+    this.setData({ deliveryType: e.detail.value });
+    this.calculatePrice();
+  },
+
+  async onChooseAddress() {
+    try {
+      const res = await wx.chooseLocation({});
+      console.log('Selected address:', res);
+      this.setData({
+        address: {
+          address: res.address,
+          detail: res.name,
+          name: this.data.userInfo?.nickName || '用户',
+          phone: '13800000000',
+          lat: res.latitude,
+          lng: res.longitude,
+        },
+      });
+      this.calculatePrice();
+    } catch (err) {
+      console.error('Choose location failed', err);
+    }
+  },
+
+  onEditNotes() {
+    this.setData({
+      notesDialogVisible: true,
+      tempNotes: this.data.notes,
+    });
+  },
+
+  onNotesChange(e: any) {
+    this.setData({ tempNotes: e.detail.value });
+  },
+
+  onConfirmNotes() {
+    this.setData({
+      notes: this.data.tempNotes,
+      notesDialogVisible: false,
+    });
+  },
+
+  onCancelNotes() {
+    this.setData({ notesDialogVisible: false });
+  },
+
+  onSelectCoupon() {
+    Toast({
+      context: this,
+      selector: '#t-toast',
+      message: '优惠券功能开发中',
+    });
+  },
+
+  async calculatePrice() {
+    this.updateCartDisplay();
+    const { items, deliveryType } = this.data;
+    
+    console.log('计算价格，商品数量:', items?.length);
+    if (!items || items.length === 0) {
+      this.setData({
+        totalPrice: '0.00',
+        deliveryFee: '0.00',
+        discountAmount: '0.00',
+        finalPrice: '0.00',
+      });
+      return;
+    }
+
+    let total = items.reduce((sum: number, item: any) => {
+      const basePrice = item.base_price || 0;
+      const specsPrice = (item.selected_specs || []).reduce((s: number, spec: any) => s + (spec.price_modifier || 0), 0);
+      const itemPrice = basePrice + specsPrice;
+      return sum + itemPrice * (item.quantity || 0);
+    }, 0);
+    
+    let delivery = deliveryType === 'delivery' ? 5 : 0;
+    let discount = 0;
+
+    console.log('总价:', total, '配送费:', delivery);
+    
+    this.setData({
+      totalPrice: total.toFixed(2),
+      deliveryFee: delivery.toFixed(2),
+      discountAmount: discount.toFixed(2),
+      finalPrice: (total + delivery - discount).toFixed(2),
+    });
+  },
+
+  async onSubmitOrder() {
+    if (this.data.submitting) return;
+    
+    if (this.data.deliveryType === 'delivery' && !this.data.address) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请选择收货地址',
+        theme: 'warning',
+      });
+      return;
+    }
+
+    this.setData({ submitting: true });
+
+    try {
+      const { items, deliveryType, address, shopInfo, notes } = this.data;
+      
+      console.log('提交订单:', {
+        items,
+        deliveryType,
+        shopInfo,
+        notes,
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '下单成功',
+        theme: 'success',
+      });
+
+      this.clearCart();
+
+      setTimeout(() => {
+        wx.switchTab({ url: '/pages/order-list/index' });
+      }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '下单失败，请重试',
+        theme: 'error',
+      });
+    } finally {
+      this.setData({ submitting: false });
+    }
+  },
+});

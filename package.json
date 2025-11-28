@@ -7,7 +7,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/uuid": "^10.0.0",
     "miniprogram-api-typings": "^4.1.0"
   },
   "main": "index.js",
@@ -25,7 +24,6 @@
   "dependencies": {
     "mobx-miniprogram": "^6.12.3",
     "mobx-miniprogram-bindings": "^5.1.1",
-    "tdesign-miniprogram": "^1.11.0",
-    "uuid": "^9.0.1"
+    "tdesign-miniprogram": "^1.11.0"
   }
 }

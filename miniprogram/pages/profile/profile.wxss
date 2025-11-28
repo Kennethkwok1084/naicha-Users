@@ -1,4 +1,7 @@
 /* pages/profile/profile.wxss */
 .container {
   padding: 20rpx;
+  /* 为 TabBar 预留空间：50px(tabBar) + env(safe-area) + 20rpx 额外间距 */
+  padding-bottom: calc(50px + env(safe-area-inset-bottom) + 20rpx);
+  padding-bottom: calc(50px + constant(safe-area-inset-bottom) + 20rpx);
 }

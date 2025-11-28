@@ -5,7 +5,9 @@
     "pages/product-detail/product-detail",
     "pages/order-list/order-list",
     "pages/profile/profile",
-    "pages/logs/logs"
+    "pages/logs/logs",
+    "pages/debug/debug",
+    "pages/checkout/checkout"
   ],
   "window": {
     "navigationBarTextStyle": "black",

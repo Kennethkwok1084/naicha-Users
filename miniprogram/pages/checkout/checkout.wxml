@@ -1,0 +1,168 @@
+<t-navbar title="提交订单" left-arrow fixed delta="{{1}}" t-class="custom-navbar" bind:go-back="onNavBack" bind:fail="onNavBackFail" />
+
+<view class="checkout-page" style="padding-top: {{navbarHeight}}rpx; padding-bottom: {{pagePaddingBottom}}rpx;">
+  <!-- 顶部店铺信息卡片 -->
+  <view class="section-card top-card">
+    <view class="shop-header">
+      <view class="shop-name-row">
+        <text class="shop-name">{{shopInfo.name || '清风茶记'}}</text>
+        <view class="delivery-toggle">
+          <view class="toggle-item {{deliveryType === 'pickup' ? 'active' : ''}}" bind:tap="onDeliveryTypeChange" data-value="pickup">自提</view>
+          <view class="toggle-item {{deliveryType === 'delivery' ? 'active' : ''}}" bind:tap="onDeliveryTypeChange" data-value="delivery">外卖</view>
+        </view>
+      </view>
+      <view class="distance-row">
+        <t-icon name="location" size="32rpx" color="#999" />
+        <text>您距离当前门店49.1km，请确认下单门店是否正确</text>
+      </view>
+    </view>
+    
+    <view class="divider"></view>
+
+    <view class="phone-row">
+      <text class="label">预留手机</text>
+      <view class="phone-input-wrap">
+        <input 
+          class="phone-input" 
+          type="number" 
+          placeholder="请输入手机号" 
+          value="{{userPhone}}" 
+          bindinput="onPhoneInput" 
+          maxlength="11"
+        />
+        <button class="get-phone-btn" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">
+          自动填写
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 就餐方式 -->
+  <view class="section-card dining-options" wx:if="{{deliveryType === 'pickup'}}">
+    <view class="dining-btn {{diningType === 'dine-in' ? 'active' : ''}}" catchtap="onDiningTypeChange" data-type="dine-in">
+      <t-icon name="shop" size="48rpx" />
+      <text>店内就餐</text>
+      <view class="check-mark" wx:if="{{diningType === 'dine-in'}}"></view>
+    </view>
+    <view class="dining-btn {{diningType === 'takeout' ? 'active' : ''}}" catchtap="onDiningTypeChange" data-type="takeout">
+      <t-icon name="bag" size="48rpx" />
+      <text>打包带走</text>
+      <view class="check-mark" wx:if="{{diningType === 'takeout'}}"></view>
+    </view>
+  </view>
+
+  <!-- 自取时间 -->
+  <view class="section-card time-card" wx:if="{{deliveryType === 'pickup'}}" bind:tap="onShowPickupTime">
+    <view class="label">预约取餐</view>
+    <view class="value">
+      <text>{{estimatedPickupTime}}</text>
+      <t-icon name="chevron-right" size="40rpx" color="#999" />
+    </view>
+  </view>
+
+  <!-- 商品明细 -->
+  <view class="section-card product-list">
+    <view class="card-title">商品明细</view>
+    <block wx:for="{{cartItems}}" wx:key="index">
+      <view class="product-item">
+        <image class="product-img" src="{{item.image}}" mode="aspectFill" />
+        <view class="product-info">
+          <view class="info-left">
+            <view class="product-name">{{item.name}}</view>
+            <view class="product-specs">{{item.specs}}</view>
+          </view>
+          <view class="info-right">
+            <view class="price">¥{{item.price}}</view>
+            <view class="quantity">x{{item.quantity}}</view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 费用明细 -->
+  <view class="section-card price-breakdown">
+    <view class="price-row">
+      <text>商品小计</text>
+      <text class="price">¥{{totalPrice}}</text>
+    </view>
+    <view class="price-row">
+      <text>包装费</text>
+      <text class="price">¥0</text>
+    </view>
+    <view class="price-row" wx:if="{{deliveryType === 'delivery'}}">
+      <text>配送费</text>
+      <text class="price">¥{{deliveryFee}}</text>
+    </view>
+    
+    <t-cell title="优惠券" note="{{couponText}}" arrow hover bind:tap="onSelectCoupon" class="coupon-cell" bordered="{{false}}" />
+    
+    <view class="discount-tip">
+      <view class="tip-left">
+        <text>优惠说明</text>
+        <t-icon name="help-circle" size="32rpx" color="#999" />
+      </view>
+      <view class="tip-right">
+        <text>共{{cartItems.length}}件商品 小计</text>
+        <text class="subtotal-price">¥{{finalPrice}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 底部固定区域 - 独立于页面内容 -->
+<!-- 底部协议 -->
+<view class="bottom-agreement-fixed" style="padding-bottom: {{agreementPaddingBottom}}rpx;">
+  <view class="agreement-check" bind:tap="onAgreementChange">
+    <t-icon name="{{agreementChecked ? 'check-circle-filled' : 'circle'}}" size="40rpx" color="{{agreementChecked ? '#0052d9' : '#ccc'}}" />
+    <text class="text">阅读并同意 <text class="link" catchtap="onViewAgreement">《自提服务协议》</text></text>
+  </view>
+</view>
+
+<!-- 底部结算栏 -->
+<view class="bottom-bar-fixed safe-area-bottom">
+  <view class="total-info">
+    <view class="total-info-top">
+      <text class="label">合计</text>
+      <text class="price">¥{{finalPrice}}</text>
+    </view>
+    <text class="saved" wx:if="{{savedAmount > 0}}">为您节省¥{{savedAmount}}</text>
+  </view>
+  <view class="submit-btn-wrapper">
+    <t-button theme="primary" size="large" class="submit-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmitOrder">立即支付</t-button>
+  </view>
+</view>
+
+<!-- 备注弹窗 -->
+<t-dialog
+  visible="{{notesDialogVisible}}"
+  title="订单备注"
+  confirm-btn="确定"
+  cancel-btn="取消"
+  bind:confirm="onConfirmNotes"
+  bind:cancel="onCancelNotes"
+>
+  <view slot="content">
+    <t-textarea
+      placeholder="请输入口味、包装等要求"
+      value="{{tempNotes}}"
+      bind:change="onNotesChange"
+      maxlength="50"
+    />
+  </view>
+</t-dialog>
+
+<!-- 时间选择器 -->
+<t-picker
+  visible="{{timePickerVisible}}"
+  value="{{timePickerValue}}"
+  title="选择取餐时间"
+  cancelBtn="取消"
+  confirmBtn="确定"
+  bindchange="onConfirmPickupTime"
+  bindcancel="onCancelPickupTime"
+>
+  <t-picker-item options="{{pickupTimeOptions}}" />
+</t-picker>
+
+<t-toast id="t-toast" />

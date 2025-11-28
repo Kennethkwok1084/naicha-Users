@@ -1,5 +1,6 @@
 // app.ts
 import { cartStore } from './stores/index'
+import { initAnalytics, getAnalytics, flushAll } from './utils/analytics'
 
 // 全局错误抑制 - Skyline 渲染器兼容性处理
 function setupErrorHandlers() {
@@ -32,8 +33,17 @@ App<IAppOption>({
     // 全局错误抑制
     setupErrorHandlers();
     
+    // 初始化游客会话ID（用于埋点）
+    this.initGuestSession();
+    
     // 初始化购物车
     cartStore.init();
+    
+    // 初始化埋点系统
+    initAnalytics({
+      enabled: true,
+      debug: true, // 开发环境开启调试
+    });
     
     // 检查小程序更新
     this.checkUpdate();
@@ -62,6 +72,18 @@ App<IAppOption>({
     }
   },
 
+  onShow() {
+    // 小程序显示时，记录应用启动事件
+    getAnalytics().track('app_show', {
+      scene: wx.getLaunchOptionsSync().scene,
+    });
+  },
+
+  onHide() {
+    // 小程序隐藏时，立即上报所有待上报事件
+    flushAll();
+  },
+
   onError(error: string) {
     // 过滤已知的 Skyline 渲染器兼容性错误
     const ignoredErrors = [
@@ -75,7 +97,25 @@ App<IAppOption>({
     
     if (!shouldIgnore) {
       console.error('App Error:', error);
-      // 可以在这里上报到错误监控平台
+      
+      // 上报错误到埋点系统
+      getAnalytics().track('app_error', {
+        error: error.substring(0, 500), // 限制长度
+        timestamp: new Date().toISOString(),
+      });
+    }
+  },
+
+  initGuestSession() {
+    // 初始化游客会话ID，用于埋点等匿名接口
+    let sessionId = wx.getStorageSync('guest_session_id');
+    if (!sessionId) {
+      // 生成游客会话ID: guest_<timestamp>_<random>
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(2, 15);
+      sessionId = `guest_${timestamp}_${random}`;
+      wx.setStorageSync('guest_session_id', sessionId);
+      console.log('[App] 游客会话ID已创建:', sessionId);
     }
   },
 

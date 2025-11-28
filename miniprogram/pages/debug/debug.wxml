@@ -1,0 +1,92 @@
+<view class="debug-page">
+  <view class="debug-header">
+    <text class="debug-title">🔧 设备适配调试</text>
+    <view class="debug-actions">
+      <button class="debug-btn" bindtap="onRefresh">刷新</button>
+      <button class="debug-btn" bindtap="onCopyInfo">复制信息</button>
+    </view>
+  </view>
+
+  <view class="debug-section">
+    <view class="section-title">📱 设备信息</view>
+    <view class="info-item">
+      <text class="info-label">平台:</text>
+      <text class="info-value">{{systemInfo.platform}}</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">屏幕尺寸:</text>
+      <text class="info-value">{{systemInfo.screenWidth}}x{{systemInfo.screenHeight}} px</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">窗口尺寸:</text>
+      <text class="info-value">{{systemInfo.windowWidth}}x{{systemInfo.windowHeight}} px</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">像素比:</text>
+      <text class="info-value">{{systemInfo.pixelRatio}}</text>
+    </view>
+  </view>
+
+  <view class="debug-section">
+    <view class="section-title">📏 安全区域</view>
+    <view class="info-item">
+      <text class="info-label">状态栏高度:</text>
+      <text class="info-value">{{systemInfo.statusBarHeight}} px</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">顶部安全区:</text>
+      <text class="info-value">{{systemInfo.safeArea.top}} px</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">底部安全区:</text>
+      <text class="info-value">{{systemInfo.screenHeight - systemInfo.safeArea.bottom}} px</text>
+    </view>
+  </view>
+
+  <view class="debug-section">
+    <view class="section-title">🎨 计算结果</view>
+    <view class="info-item">
+      <text class="info-label">导航栏高度:</text>
+      <text class="info-value highlight">{{navBarHeight}} rpx</text>
+    </view>
+    <view class="info-item">
+      <text class="info-label">TabBar 高度:</text>
+      <text class="info-value highlight">{{tabBarHeight}} rpx</text>
+    </view>
+  </view>
+
+  <view class="debug-section">
+    <view class="section-title">🔧 CSS 变量</view>
+    <view class="info-item" wx:for="{{cssVars}}" wx:key="index" wx:for-item="value" wx:for-index="key">
+      <text class="info-label">{{key}}:</text>
+      <text class="info-value code">{{value}}</text>
+    </view>
+  </view>
+
+  <view class="debug-section">
+    <view class="section-title">✅ 检查清单</view>
+    <view class="checklist">
+      <view class="check-item">
+        <text class="check-icon">{{systemInfo.platform === 'ios' || systemInfo.platform === 'android' ? '✅' : '⚠️'}}</text>
+        <text class="check-text">平台识别正常</text>
+      </view>
+      <view class="check-item">
+        <text class="check-icon">{{systemInfo.screenHeight - systemInfo.safeArea.bottom > 0 ? '✅' : '⚠️'}}</text>
+        <text class="check-text">{{systemInfo.screenHeight - systemInfo.safeArea.bottom > 0 ? '检测到刘海屏/全面屏' : '普通屏幕'}}</text>
+      </view>
+      <view class="check-item">
+        <text class="check-icon">{{navBarHeight > 0 ? '✅' : '❌'}}</text>
+        <text class="check-text">导航栏高度计算成功</text>
+      </view>
+      <view class="check-item">
+        <text class="check-icon">{{tabBarHeight > 0 ? '✅' : '❌'}}</text>
+        <text class="check-text">TabBar 高度计算成功</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="debug-tips">
+    <view class="tips-title">💡 调试提示</view>
+    <text class="tips-content">1. 在不同机型切换后点击"刷新"更新数据\n2. 点击"复制信息"可将完整信息发送给开发者\n3. 如果显示异常，检查控制台是否有错误信息\n4. 确保已在 app.wxss 中定义全局 CSS 变量</text>
+  </view>
+</view>

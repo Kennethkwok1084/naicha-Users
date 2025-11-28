@@ -142,7 +142,9 @@ page {
 /* 集杯卡 */
 .loyalty-card-section {
   padding: 0 32rpx;
-  margin-bottom: 160rpx;
+  /* 为 TabBar 预留空间：50px(tabBar) + env(safe-area) + 32rpx 额外间距 */
+  margin-bottom: calc(50px + env(safe-area-inset-bottom) + 32rpx);
+  margin-bottom: calc(50px + constant(safe-area-inset-bottom) + 32rpx);
 }
 
 .loyalty-card {

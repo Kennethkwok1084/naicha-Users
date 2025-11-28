@@ -1,4 +1,8 @@
 /* pages/order-list/order-list.wxss */
 .container {
   padding: 20rpx;
+  /* 为 TabBar 预留空间 */
+  padding-bottom: 120rpx;
+  padding-bottom: calc(120rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
 }

@@ -34,8 +34,8 @@
     <view style="height: {{navPlaceholderHeight}}px;"></view>
     
     <!-- 固定导航栏 -->
-    <view class="header-bar" style="height: {{navBarHeight}}px; padding-top: {{statusBarHeight}}px;">
-      <view class="header-bar__content">
+    <view class="header-bar" style="padding-top: {{statusBarHeight}}px;">
+      <view class="header-bar__content" style="height: {{navBarHeight}}px;">
         <view class="header-bar__left">
           <view class="header-bar__icon-btn" bindtap="onGoBack">
             <t-icon name="chevron-left" size="40rpx" />
@@ -44,7 +44,7 @@
             <t-icon name="home" size="40rpx" />
           </view>
         </view>
-        <view class="header-bar__search">
+        <view class="header-bar__search" style="margin-right: {{menuButtonRight + 16}}px;">
           <t-search
             placeholder="搜饮品/口味/配料"
             value="{{searchKeyword}}"
@@ -56,16 +56,11 @@
             bind:submit="handleSearchConfirm"
           />
         </view>
-        <view class="header-bar__right">
-          <view class="header-bar__more-btn" bindtap="onShowShopDetail">
-            <t-icon name="ellipsis" size="40rpx" />
-          </view>
-        </view>
       </view>
     </view>
 
     <view class="store-info">
-      <view class="store-info__header" bindtap="onShowShopDetail">
+      <view class="store-info__header">
         <view class="store-info__main">
           <t-icon name="location" size="28rpx" color="#333" />
           <text class="store-info__name">{{shopName || '星汇城店'}}</text>
@@ -96,7 +91,7 @@
       <view class="delivery-info" wx:if="{{deliveryInfoExpanded}}">
         <view class="delivery-info__item">
           <text class="delivery-info__label">配送范围：</text>
-          <text class="delivery-info__value">门店3公里范围内</text>
+          <text class="delivery-info__value">门圧3公里范围内</text>
         </view>
         <view class="delivery-info__item">
           <text class="delivery-info__label">配送时间：</text>
@@ -104,11 +99,21 @@
         </view>
         <view class="delivery-info__item">
           <text class="delivery-info__label">配送费用：</text>
-          <text class="delivery-info__value">基础运费¥3，满¥25包邮</text>
+          <text class="delivery-info__value">基础运费￥3，满￥25包邮</text>
         </view>
         <view class="delivery-info__item">
           <text class="delivery-info__label">营业时间：</text>
           <text class="delivery-info__value">07:30-22:30</text>
+        </view>
+        <view class="delivery-info__actions">
+          <view class="delivery-info__action-btn" bindtap="onCallShop">
+            <t-icon name="call" size="32rpx" color="#7D4500" />
+            <text>联系商家</text>
+          </view>
+          <view class="delivery-info__action-btn" bindtap="onNavigateToShop">
+            <t-icon name="location" size="32rpx" color="#7D4500" />
+            <text>到店导航</text>
+          </view>
         </view>
       </view>
       
@@ -165,7 +170,7 @@
     </view>
   </view>
 
-  <view class="cart-bar" wx:if="{{cartHasItems}}">
+  <view class="cart-bar" wx:if="{{cartHasItems}}" style="bottom: {{cartBarBottom}}px;">
     <view class="cart-bar__left" bindtap="handleCartPreview">
       <view class="cart-bar__icon">
         <t-icon name="cart" size="44rpx" color="#7D4500" />
@@ -180,7 +185,7 @@
       <text>去结算</text>
     </view>
   </view>
-  <view class="cart-bar" wx:else>
+  <view class="cart-bar" wx:else style="bottom: {{cartBarBottom}}px;">
     <view class="cart-bar__left">
       <view class="cart-bar__icon">
         <t-icon name="cart" size="44rpx" color="#999" />
@@ -195,7 +200,7 @@
   <t-popup
     visible="{{shopDetailVisible}}"
     placement="bottom"
-    z-index="10000"
+    z-index="11000"
     bind:visible-change="onShopDetailChange"
   >
     <view class="shop-detail-popup">
@@ -258,92 +263,76 @@
   <t-popup
     visible="{{specPopupVisible}}"
     placement="bottom"
-    z-index="11000"
+    z-index="12000"
+    custom-overlay-style="z-index:12000;"
     close-on-overlay-click="{{false}}"
     bind:visible-change="onSpecPopupChange"
   >
-    <view class="spec-popup">
-      <!-- 骨架屏加载状态 -->
-      <view wx:if="{{specPopupLoading}}" class="spec-popup__skeleton">
-        <view class="spec-popup__skeleton-header">
-          <view class="spec-popup__skeleton-image"></view>
-          <view class="spec-popup__close" bindtap="closeSpecPopup">
-            <t-icon name="close" size="48rpx" color="#fff" />
-          </view>
-        </view>
-        <view class="spec-popup__skeleton-info">
-          <t-skeleton theme="paragraph" row-col="{{[[{width: '30%', height: '40rpx'}], [{width: '60%', height: '28rpx'}], [{width: '80%', height: '24rpx'}]]}}" loading="{{true}}" />
-        </view>
-        <view class="spec-popup__skeleton-content">
-          <view class="spec-group" wx:for="{{[1,2,3]}}" wx:key="*this">
-            <t-skeleton theme="paragraph" row-col="{{[[{width: '25%', height: '28rpx'}], {width: '100%', height: '60rpx'}, {width: '100%', height: '60rpx'}]}}" loading="{{true}}" />
-          </view>
-        </view>
+    <view
+      class="popup-container"
+      style="height: {{specPopupHeight}}px; max-height: {{specPopupMaxHeight}}px;"
+      bind:touchstart="onPopupTouchStart"
+      bind:touchmove="onPopupTouchMove"
+      bind:touchend="onPopupTouchEnd"
+    >
+      <!-- 关闭按钮 -->
+      <view class="close-btn" bindtap="closeSpecPopup">
+        <t-icon name="close" size="32rpx" color="#FFF" />
       </view>
 
-      <!-- 实际内容 -->
-      <block wx:else>
-        <!-- 商品图片与关闭按钮 -->
-        <view class="spec-popup__header">
-          <image
-            class="spec-popup__image"
-            src="{{selectedProduct.image_url || productImagePlaceholder}}"
+      <!-- 滚动区域 - 包含图片、产品信息、规格和数量 -->
+      <scroll-view 
+        class="scroll-content" 
+        scroll-y 
+        enhanced 
+        show-scrollbar="{{false}}"
+      >
+        <!-- 顶部产品宣传图 -->
+        <view class="popup-banner">
+          <image 
+            class="banner-image" 
+            src="{{selectedProduct.image_url}}" 
             mode="aspectFill"
           />
-          <view class="spec-popup__close" bindtap="closeSpecPopup">
-            <t-icon name="close" size="48rpx" color="#fff" />
-          </view>
         </view>
 
-        <!-- 商品信息 -->
-        <view class="spec-popup__info">
-          <view class="spec-popup__price-row">
-            <text class="spec-popup__price">¥{{specDisplayPrice}}</text>
-            <text class="spec-popup__stock">库存充足</text>
+        <!-- 产品信息卡片 -->
+        <view class="popup-info-card">
+          <view class="product-title">{{selectedProduct.name}}</view>
+          <view class="product-subtitle" wx:if="{{selectedProduct.description}}">
+            {{selectedProduct.description}}
           </view>
-          <text class="spec-popup__name">{{selectedProduct.name}}</text>
-          <text class="spec-popup__desc">{{selectedProduct.description}}</text>
         </view>
 
         <!-- 规格选择区域 -->
-        <scroll-view class="spec-popup__content" scroll-y enhanced show-scrollbar="{{false}}">
-          <!-- 规格组 -->
         <block wx:for="{{specGroups}}" wx:key="group_id" wx:for-item="group">
-          <view class="spec-group">
-            <view class="spec-group__title">
+          <view class="topping-section">
+            <view class="section-title">
               <text>{{group.name}}</text>
-              <t-tag
-                wx:if="{{specGroupBehaviors[group.group_id] && specGroupBehaviors[group.group_id].tag}}"
-                size="small"
-                theme="primary"
-                variant="light"
-              >
-                {{specGroupBehaviors[group.group_id].tag}}
-              </t-tag>
+              <text wx:if="{{group.required}}" class="required-tag">必选</text>
             </view>
-
-            <!-- 规格选项 - 胶囊按钮样式 -->
-            <view class="spec-options-grid">
+            
+            <view class="option-container">
               <block wx:for="{{group.options}}" wx:for-item="opt" wx:key="option_id">
                 <view
-                  class="spec-tag {{opt._selected ? 'spec-tag--selected' : ''}} {{opt.inventory_status === 'sold_out' ? 'spec-tag--disabled' : ''}}"
+                  class="spec-option {{opt._selected ? 'active' : ''}} {{opt.inventory_status === 'sold_out' ? 'disabled' : ''}}"
                   data-group-id="{{group.group_id}}"
                   data-option-id="{{opt.option_id}}"
                   bindtap="onSpecOptionTap"
                 >
-                  <text class="spec-tag__name">{{opt.name}}</text>
+                  <text class="option-name">{{opt.name}}</text>
                   <text 
                     wx:if="{{opt.price_modifier > 0}}"
-                    class="spec-tag__price"
+                    class="price-tag"
                   >
                     +¥{{opt.price_modifier}}
                   </text>
-                  <text
+                  <view 
                     wx:if="{{opt.inventory_status === 'sold_out'}}"
-                    class="spec-tag__soldout"
+                    class="option-tag"
                   >
-                    售罄
-                  </text>
+                    <text>售罄</text>
+                  </view>
                 </view>
               </block>
             </view>
@@ -351,63 +340,42 @@
         </block>
 
         <!-- 数量选择 -->
-        <view class="spec-group">
-          <view class="spec-option-item">
-            <text class="spec-option-name">数量</text>
-            <t-stepper
-              value="{{specQuantity}}"
-              min="1"
-              max="99"
-              theme="filled"
-              bind:change="handleSpecQuantityChange"
-            />
+        <view class="quantity-container">
+          <view class="quantity-text">
+            <text>数量</text>
           </view>
-        </view>
-
-        <!-- 备注 -->
-        <view class="spec-group">
-          <view class="spec-group__title">
-            <text>口味备注</text>
+          <view class="stepper">
+            <view 
+              class="minus-btn {{specQuantity <= 1 ? 'disabled' : ''}}"
+              bindtap="handleQuantityMinus"
+            >
+              <t-icon name="remove" size="32rpx" color="#333" />
+            </view>
+            <view class="quantity">
+              <text>{{specQuantity}}</text>
+            </view>
+            <view class="plus-btn" bindtap="handleQuantityPlus">
+              <t-icon name="add" size="32rpx" color="#333" />
+            </view>
           </view>
-          <t-textarea
-            placeholder="少冰/走糖等需求"
-            maxlength="50"
-            value="{{specNote}}"
-            bind:change="handleSpecNoteChange"
-            indicator
-            autosize
-          />
         </view>
       </scroll-view>
 
-        <!-- 底部操作栏 -->
-        <view class="spec-popup__footer">
-          <view class="spec-popup__total">
-            <text class="spec-popup__total-label">小计</text>
-            <text class="spec-popup__total-price">¥{{specTotalPrice}}</text>
+      <!-- 底部操作栏 - 放在最后 -->
+      <view class="action-bar" style="padding-bottom: {{actionBarPaddingBottom}}px;">
+        <view class="action-price">
+          <text class="action-price__label">小计: </text>
+          <text class="action-price__value">¥{{specTotalPrice}}</text>
+        </view>
+        <view class="action-buttons">
+          <view class="action-btn cart-btn" bindtap="handleAddToCart">
+            <text>加入购物车</text>
           </view>
-          <view class="spec-popup__actions">
-            <t-button
-              class="spec-popup__btn spec-popup__btn--secondary"
-              theme="light"
-              size="large"
-              block
-              bind:tap="handleAddToCart"
-            >
-              加入购物车
-            </t-button>
-            <t-button
-              class="spec-popup__btn spec-popup__btn--primary"
-              theme="primary"
-              size="large"
-              block
-              bind:tap="handleBuyNow"
-            >
-              立即购买
-            </t-button>
+          <view class="action-btn buy-btn" bindtap="handleBuyNow">
+            <text>立即购买</text>
           </view>
         </view>
-      </block>
+      </view>
     </view>
   </t-popup>
 </view>

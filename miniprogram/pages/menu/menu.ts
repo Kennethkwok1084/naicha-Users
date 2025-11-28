@@ -103,6 +103,14 @@ Component({
     statusBarHeight: 20,
     navBarHeight: 44,
     navPlaceholderHeight: 64,
+    menuButtonRight: 7,
+    tabBarHeight: 50,
+    safeAreaBottom: 0,
+    cartBarBottom: 60,
+    actionBarPaddingBottom: 24,
+    specPopupMinHeight: 600,
+    specPopupMaxHeight: 800,
+    specPopupHeight: 600,
     searchKeyword: '',
     deliveryInfoExpanded: false,
     noticeExpanded: false,
@@ -160,10 +168,10 @@ Component({
     },
 
     detached(this: any) {
-      if (this.storeBindings) {
+      if (this.storeBindings && typeof this.storeBindings.destroyStoreBindings === 'function') {
         this.storeBindings.destroyStoreBindings()
       }
-      if (this.cartBindings) {
+      if (this.cartBindings && typeof this.cartBindings.destroyStoreBindings === 'function') {
         this.cartBindings.destroyStoreBindings()
       }
     }
@@ -184,6 +192,9 @@ Component({
   },
 
   methods: {
+    popupDragStartY: 0,
+    popupInitialHeight: 0,
+
     // 初始化 Store 绑定
     initStoreBindings(this: any) {
       this.storeBindings = createStoreBindings(this, {
@@ -194,6 +205,7 @@ Component({
           shopAnnouncement: 'shopAnnouncement',
           shopAddress: 'shopAddress',
           shopPhone: 'shopPhone',
+          shopLocation: 'location',
           deliveryRadius: (store: any) => {
             const radius = store.deliveryRadius
             if (radius && radius >= 1000) {
@@ -233,26 +245,54 @@ Component({
       })
     },
 
-    // 计算导航栏高度和位置（与胶囊对齐）
+    // 计算导航栏、tabBar 和安全区高度
     measureNavigationBar(this: any) {
       try {
-        // 获取状态栏高度（距上）
-        const statusBarHeight = wx.getSystemInfoSync().statusBarHeight || 20
+        // 获取系统信息
+        const systemInfo = wx.getSystemInfoSync()
+        const statusBarHeight = systemInfo.statusBarHeight || 20
+        const screenWidth = systemInfo.screenWidth || 375
+        const safeAreaBottom = systemInfo.screenHeight - (systemInfo.safeArea?.bottom || systemInfo.screenHeight)
         
         // 获取胶囊按钮位置信息
         const menuButtonInfo = wx.getMenuButtonBoundingClientRect()
         
-        // 计算导航栏高度：胶囊高度 + 胶囊上下边距
+        // 获取导航栏高度：胶囊高度 + 胶囊上下边距
         // 胶囊上下边距相等，通过 (胶囊top - 状态栏高度) 得到上边距
         const navBarHeight = menuButtonInfo.height + (menuButtonInfo.top - statusBarHeight) * 2
         
         // 占位容器高度 = 导航栏高度 + 状态栏高度
         const navPlaceholderHeight = navBarHeight + statusBarHeight
+        
+        // 计算胶囊右侧距离屏幕边缘的距离（px）
+        const menuButtonRight = screenWidth - menuButtonInfo.right
+        
+        // TabBar 高度（微信默认 50px）
+        const tabBarHeight = 50
+        
+        // 购物车浮层底部距离 = tabBar 高度 + 安全区 + 10px 间距
+        const cartBarBottom = tabBarHeight + safeAreaBottom + 10
+        
+        // 规格弹窗高度：默认 75% 高度，最大 90% 高度
+        const specPopupMinHeight = Math.round(systemInfo.windowHeight * 0.75)
+        const specPopupMaxHeight = Math.round(systemInfo.windowHeight * 0.9)
+        const specPopupHeight = specPopupMinHeight
+
+        // 底部操作栏 padding，预留 TabBar 高度 + 安全区
+        const actionBarPaddingBottom = tabBarHeight + safeAreaBottom + 12
 
         this.setData({
           statusBarHeight,
           navBarHeight,
-          navPlaceholderHeight
+          navPlaceholderHeight,
+          menuButtonRight,
+          tabBarHeight,
+          safeAreaBottom,
+          cartBarBottom,
+          specPopupMinHeight,
+          specPopupMaxHeight,
+          specPopupHeight,
+          actionBarPaddingBottom
         })
       } catch (error) {
         console.error('获取导航栏信息失败:', error)
@@ -262,7 +302,13 @@ Component({
         this.setData({
           statusBarHeight,
           navBarHeight,
-          navPlaceholderHeight: statusBarHeight + navBarHeight
+          navPlaceholderHeight: statusBarHeight + navBarHeight,
+          menuButtonWidth: 87,
+          menuButtonRight: 7,
+          actionBarPaddingBottom: 24,
+          specPopupMinHeight: 520,
+          specPopupMaxHeight: 780,
+          specPopupHeight: 520
         })
       }
     },
@@ -409,7 +455,8 @@ Component({
           specDisplayPrice: displayPrice.toFixed(2),
           specTotalPrice: displayPrice.toFixed(2),
           specPriceBreakdown: this.buildSpecBreakdown(basePrice, initialState.specSelectedSpecs, displayPrice),
-          specNote: ''
+          specNote: '',
+          specPopupHeight: this.data.specPopupMinHeight
         })
       }, 300)
     },
@@ -437,6 +484,44 @@ Component({
       if (!e.detail.visible) {
         this.closeSpecPopup()
       }
+    },
+
+    onPopupTouchStart(this: any, e: any) {
+      const touch = e.touches?.[0]
+      if (!touch) return
+      this.popupDragStartY = touch.clientY
+      this.popupInitialHeight = this.data.specPopupHeight
+    },
+
+    onPopupTouchMove(this: any, e: any) {
+      const touch = e.touches?.[0]
+      if (!touch || !this.popupDragStartY) return
+      const deltaY = touch.clientY - this.popupDragStartY
+      // 向上拖动时，提前预览高度，但不超过最大值
+      if (deltaY < -10) {
+        const nextHeight = Math.min(this.data.specPopupMaxHeight, this.popupInitialHeight + Math.abs(deltaY))
+        this.setData({ specPopupHeight: nextHeight })
+      }
+    },
+
+    onPopupTouchEnd(this: any, e: any) {
+      const touch = e.changedTouches?.[0]
+      if (!touch || !this.popupDragStartY) return
+      const deltaY = touch.clientY - this.popupDragStartY
+
+      if (deltaY <= -60) {
+        // 上拉扩展到最大高度
+        this.setData({ specPopupHeight: this.data.specPopupMaxHeight })
+      } else if (deltaY >= 80) {
+        // 下拉关闭
+        this.closeSpecPopup()
+      } else {
+        // 回到默认高度
+        this.setData({ specPopupHeight: this.data.specPopupMinHeight })
+      }
+
+      this.popupDragStartY = 0
+      this.popupInitialHeight = 0
     },
 
     handleRadioChange(this: any, event: any) {
@@ -505,12 +590,13 @@ Component({
       }
       
       // 更新specGroups，添加_selected标记，确保返回纯对象
-      const specGroups = this.data.specGroups.map((g: MenuSpecGroup) => {
+      const specGroups = this.data.specGroups.map((g: any) => {
         if (g.group_id !== gid) {
           return {
             group_id: g.group_id,
             name: g.name,
             sort_order: g.sort_order,
+            required: g.required || false,
             options: g.options.map((opt: any) => ({
               option_id: opt.option_id,
               name: opt.name,
@@ -525,6 +611,7 @@ Component({
           group_id: g.group_id,
           name: g.name,
           sort_order: g.sort_order,
+          required: g.required || false,
           options: g.options.map((opt: MenuSpecOption) => ({
             option_id: opt.option_id,
             name: opt.name,
@@ -620,7 +707,14 @@ Component({
           const defaultOption =
             options.find((option: MenuSpecOption) => option.inventory_status !== 'sold_out') || options[0]
           if (defaultOption) {
-            specSelectedSpecs[group.group_id] = defaultOption
+            // 创建纯对象副本，避免引用原始对象
+            specSelectedSpecs[group.group_id] = {
+              option_id: defaultOption.option_id,
+              name: defaultOption.name,
+              price_modifier: defaultOption.price_modifier,
+              inventory_status: defaultOption.inventory_status,
+              sort_order: defaultOption.sort_order
+            }
             specSelectedOptionIds[group.group_id] = String(defaultOption.option_id)
             defaultSelectedId = String(defaultOption.option_id)
           } else {
@@ -631,11 +725,12 @@ Component({
           specSelectedOptionIds[group.group_id] = []
         }
         
-        // 添加 _selected 标记，确保返回纯对象
+        // 添加 _selected 标记和 required 属性，确保返回纯对象
         return {
           group_id: group.group_id,
           name: group.name,
           sort_order: group.sort_order,
+          required: behavior.required || false,
           options: group.options.map((opt: MenuSpecOption) => ({
             option_id: opt.option_id,
             name: opt.name,
@@ -743,6 +838,36 @@ Component({
       })
     },
 
+    // 数量减少
+    handleQuantityMinus(this: any) {
+      const { specQuantity } = this.data
+      if (specQuantity <= 1) return
+      
+      const newQuantity = specQuantity - 1
+      const displayPrice = Number(this.data.specDisplayPrice) || 0
+      const totalPrice = displayPrice * newQuantity
+
+      this.setData({
+        specQuantity: newQuantity,
+        specTotalPrice: totalPrice.toFixed(2)
+      })
+    },
+
+    // 数量增加
+    handleQuantityPlus(this: any) {
+      const { specQuantity } = this.data
+      if (specQuantity >= 99) return
+      
+      const newQuantity = specQuantity + 1
+      const displayPrice = Number(this.data.specDisplayPrice) || 0
+      const totalPrice = displayPrice * newQuantity
+
+      this.setData({
+        specQuantity: newQuantity,
+        specTotalPrice: totalPrice.toFixed(2)
+      })
+    },
+
     handleSpecNoteChange(this: any, event: any) {
       const note = event?.detail?.value || ''
       this.setData({
@@ -812,6 +937,80 @@ Component({
       setTimeout(() => {
         this.closeSpecPopup()
       }, 1000)
+    },
+
+    // 立即购买
+    handleBuyNow(this: any) {
+      const { selectedProduct, specSelectedSpecs, specQuantity, specGroupBehaviors } = this.data
+      
+      if (!selectedProduct || !selectedProduct.product_id) {
+        return
+      }
+
+      // 校验必选规格
+      const specGroups = this.getSpecGroups(selectedProduct)
+      for (const group of specGroups) {
+        const selection = specSelectedSpecs[group.group_id]
+        const behavior = specGroupBehaviors[group.group_id]
+        const isRequired = behavior ? behavior.required !== false : true
+        if (!isRequired) {
+          continue
+        }
+        if (Array.isArray(selection)) {
+          if (!selection || selection.length === 0) {
+            this.showSpecToast(`请选择${group.name}`, 'warning')
+            return
+          }
+        } else if (!selection) {
+          this.showSpecToast(`请选择${group.name}`, 'warning')
+          return
+        }
+      }
+
+      const flattenSelected = Object.entries(specSelectedSpecs).reduce((acc, [groupIdStr, selection]) => {
+        if (!selection) return acc
+        const groupId = Number(groupIdStr)
+        const selectionList = Array.isArray(selection) ? selection : [selection]
+        selectionList.forEach((specOption) => {
+          if (!specOption) return
+          acc.push({
+            group_id: groupId,
+            group_name: this.getGroupNameById(groupId),
+            option_id: specOption.option_id,
+            option_name: specOption.name,
+            price_modifier: Number(specOption.price_modifier) || 0
+          })
+        })
+        return acc
+      }, [] as CartItem['selected_specs'])
+
+      // 构造购物车项
+      const cartItem: CartItem = {
+        product_id: selectedProduct.product_id,
+        product_name: selectedProduct.name,
+        quantity: specQuantity,
+        base_price: Number(selectedProduct.base_price) || 0,
+        selected_specs: flattenSelected
+      }
+
+      // 清空购物车并添加当前商品
+      cartStore.clearAll()
+      cartStore.addItem(cartItem)
+      
+      // 关闭弹窗
+      this.closeSpecPopup()
+
+      // 跳转到结算页面
+      wx.navigateTo({
+        url: '/pages/checkout/checkout',
+        fail: (err) => {
+          console.error('跳转结算页面失败:', err)
+          wx.showToast({
+            title: '暂无法跳转',
+            icon: 'none'
+          })
+        }
+      })
     },
 
     // 获取规格组名称
@@ -1051,17 +1250,59 @@ Component({
     },
 
     toggleNotice(this: any) {
-      const { noticeExpanded, noticeMarquee } = this.data
+      const { noticeExpanded } = this.data
       const nextExpanded = !noticeExpanded
       this.setData({
         noticeExpanded: nextExpanded,
-        currentNoticeMarquee: nextExpanded ? false : noticeMarquee
+        currentNoticeMarquee: nextExpanded ? false : { speed: 40, loop: -1 }
       })
     },
 
     toggleDeliveryInfo(this: any) {
       this.setData({
         deliveryInfoExpanded: !this.data.deliveryInfoExpanded
+      })
+    },
+
+    // 联系商家
+    onCallShop(this: any) {
+      wx.makePhoneCall({
+        phoneNumber: this.data.shopPhone || '13800138000',
+        fail: (err) => {
+          console.error('拨打电话失败:', err)
+          wx.showToast({
+            title: '拨打失败',
+            icon: 'none'
+          })
+        }
+      })
+    },
+
+    // 到店导航
+    onNavigateToShop(this: any) {
+      const { shopLocation, shopName, shopAddress } = this.data
+      
+      if (!shopLocation || !shopLocation.latitude || !shopLocation.longitude) {
+        wx.showToast({
+          title: '位置信息不可用',
+          icon: 'none'
+        })
+        return
+      }
+
+      wx.openLocation({
+        latitude: shopLocation.latitude,
+        longitude: shopLocation.longitude,
+        name: shopName || '奶茶店',
+        address: shopAddress || '',
+        scale: 15,
+        fail: (err) => {
+          console.error('打开地图失败:', err)
+          wx.showToast({
+            title: '打开地图失败',
+            icon: 'none'
+          })
+        }
       })
     },
 
@@ -1088,20 +1329,14 @@ Component({
         return
       }
       wx.navigateTo({
-        url: '/pages/order-list/order-list',
-        fail: () => {
+        url: '/pages/checkout/checkout',
+        fail: (err) => {
+          console.error('跳转结算页失败:', err)
           wx.showToast({
             title: '暂无法跳转',
             icon: 'none'
           })
         }
-      })
-    },
-
-    handleBuyNow(this: any) {
-      wx.showToast({
-        title: '立即购买流程建设中',
-        icon: 'none'
       })
     },
 

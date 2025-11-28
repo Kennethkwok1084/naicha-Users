@@ -118,3 +118,15 @@ export async function checkDeliveryRange(
   return response.data!
 }
 
+/**
+ * 检查地址是否在配送范围
+ */
+export const checkDeliveryRangeByAddress = (data: { lat: number; lng: number; shop_id: number }) => {
+  return request<{ deliverable: boolean; distance_m: number }>({
+    url: '/api/v1/shop/delivery/check',
+    method: 'POST',
+    data,
+    needAuth: false,
+  });
+};
+
