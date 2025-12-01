@@ -1,0 +1,134 @@
+.order-card {
+  background: #fff;
+  border-radius: 16rpx;
+  margin: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+/* 订单头部 */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.order-number {
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* 订单商品列表 */
+.order-items {
+  margin-bottom: 24rpx;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16rpx 0;
+}
+
+.item-info {
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.item-name {
+  font-size: 30rpx;
+  color: #333;
+  margin-bottom: 8rpx;
+  font-weight: 500;
+}
+
+.item-specs {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.item-right {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.item-price {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.item-quantity {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 订单底部 */
+.order-footer {
+  padding-top: 24rpx;
+  border-top: 1rpx solid #f5f5f5;
+}
+
+.order-info {
+  margin-bottom: 20rpx;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.info-label {
+  color: #666;
+}
+
+.info-dot {
+  color: #ddd;
+}
+
+.pickup-code {
+  color: #0052d9;
+  font-weight: 500;
+  font-size: 26rpx;
+}
+
+.eta-text {
+  color: #e37318;
+  font-size: 26rpx;
+}
+
+.order-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+
+.price-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.price-value {
+  font-size: 32rpx;
+  color: #e34d59;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 16rpx;
+}

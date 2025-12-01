@@ -1,0 +1,146 @@
+<wxs module="util">
+var formatDateTime = function(dateStr) {
+  if (!dateStr) return '';
+  var date = getDate(dateStr);
+  var now = getDate();
+  var diff = now.getTime() - date.getTime();
+  var dayDiff = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  var hours = date.getHours() < 10 ? '0' + date.getHours() : '' + date.getHours();
+  var minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : '' + date.getMinutes();
+  var time = hours + ':' + minutes;
+  
+  if (dayDiff === 0) {
+    return '今天 ' + time;
+  } else if (dayDiff === 1) {
+    return '昨天 ' + time;
+  } else {
+    return (date.getMonth() + 1) + '-' + date.getDate() + ' ' + time;
+  }
+};
+
+var formatSpecs = function(specs) {
+  if (!specs || specs.length === 0) return '';
+  var names = [];
+  for (var i = 0; i < specs.length; i++) {
+    if (specs[i].option_name) {
+      names.push(specs[i].option_name);
+    }
+  }
+  return names.join(' / ');
+};
+
+var getTotalQuantity = function(items) {
+  if (!items || items.length === 0) return 0;
+  var sum = 0;
+  for (var i = 0; i < items.length; i++) {
+    sum += items[i].quantity;
+  }
+  return sum;
+};
+
+module.exports = {
+  formatDateTime: formatDateTime,
+  formatSpecs: formatSpecs,
+  getTotalQuantity: getTotalQuantity
+};
+</wxs>
+
+<view class="order-card" bindtap="onTap">
+  <!-- 订单头部 -->
+  <view class="order-header">
+    <view class="order-number">订单号: {{order.order_number}}</view>
+    <view class="order-status">
+      <t-tag 
+        theme="{{statusMap[order.status].color}}" 
+        size="small"
+      >
+        {{statusMap[order.status].text}}
+      </t-tag>
+    </view>
+  </view>
+
+  <!-- 订单商品列表 -->
+  <view class="order-items">
+    <view class="order-item" wx:for="{{order.items}}" wx:key="product_id">
+      <view class="item-info">
+        <view class="item-name">{{item.product_name}}</view>
+        <view class="item-specs" wx:if="{{item.selected_specs.length > 0}}">
+          {{util.formatSpecs(item.selected_specs)}}
+        </view>
+      </view>
+      <view class="item-right">
+        <view class="item-price">¥{{item.unit_price}}</view>
+        <view class="item-quantity">×{{item.quantity}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 订单底部 -->
+  <view class="order-footer">
+    <view class="order-info">
+      <view class="info-row">
+        <text class="info-label">{{orderTypeMap[order.order_type]}}</text>
+        <text class="info-dot">·</text>
+        <text class="info-time">{{util.formatDateTime(order.created_at)}}</text>
+      </view>
+      <view class="info-row" wx:if="{{order.pickup_code}}">
+        <text class="pickup-code">取餐码: {{order.pickup_code}}</text>
+      </view>
+      <view class="info-row" wx:if="{{order.eta_text}}">
+        <text class="eta-text">{{order.eta_text}}</text>
+      </view>
+    </view>
+
+    <view class="order-actions">
+      <view class="total-price">
+        <text class="price-label">共{{util.getTotalQuantity(order.items)}}件</text>
+        <text class="price-value">¥{{order.total_price}}</text>
+      </view>
+
+      <!-- 待支付状态按钮 -->
+      <view class="action-buttons" wx:if="{{order.status === 'pending_payment'}}">
+        <t-button 
+          size="small" 
+          variant="outline"
+          data-action="cancel"
+          bindtap="onActionTap"
+        >
+          取消订单
+        </t-button>
+        <t-button 
+          size="small" 
+          theme="primary"
+          data-action="pay"
+          bindtap="onActionTap"
+        >
+          去支付
+        </t-button>
+      </view>
+
+      <!-- 制作中状态 -->
+      <view class="action-buttons" wx:elif="{{order.status === 'in_production' || order.status === 'ready_for_pickup'}}">
+        <t-button 
+          size="small" 
+          variant="outline"
+          data-action="contact"
+          bindtap="onActionTap"
+        >
+          联系商家
+        </t-button>
+      </view>
+
+      <!-- 已完成状态 -->
+      <view class="action-buttons" wx:elif="{{order.status === 'completed'}}">
+        <t-button 
+          size="small" 
+          variant="outline"
+          data-action="reorder"
+          bindtap="onActionTap"
+        >
+          再来一单
+        </t-button>
+      </view>
+    </view>
+  </view>
+</view>

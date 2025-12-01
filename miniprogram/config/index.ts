@@ -3,14 +3,19 @@
  * 环境配置
  */
 export const ENV = {
-  // 开发环境
+  // 开发环境 - 模拟器
   dev: {
-    apiBaseUrl: 'http://localhost:8000', // 本地开发服务器
+    apiBaseUrl: 'http://localhost:8000', // 开发者工具模拟器使用 localhost
+    debug: true
+  },
+  // 开发环境 - 真机调试
+  devDevice: {
+    apiBaseUrl: 'http://192.168.31.242:8000', // 真机使用局域网IP
     debug: true
   },
   // 测试环境
   test: {
-    apiBaseUrl: 'http://localhost:8000',
+    apiBaseUrl: 'http://192.168.31.242:8000',
     debug: true
   },
   // 生产环境
@@ -22,9 +27,13 @@ export const ENV = {
 
 /**
  * 当前环境
- * 修改此处切换环境: 'dev' | 'test' | 'prod'
+ * 修改此处切换环境: 'dev' | 'devDevice' | 'test' | 'prod'
+ * - dev: 开发者工具模拟器 (使用 localhost)
+ * - devDevice: 真机调试 (使用局域网IP)
+ * - test: 测试环境
+ * - prod: 生产环境
  */
-const CURRENT_ENV: 'dev' | 'test' | 'prod' = 'dev'
+const CURRENT_ENV: 'dev' | 'devDevice' | 'test' | 'prod' = 'dev'
 
 /**
  * 当前环境配置

@@ -1,6 +1,8 @@
 // app.ts
 import { cartStore } from './stores/index'
 import { initAnalytics, getAnalytics, flushAll } from './utils/analytics'
+import { login } from './api/user'
+import { saveAuth } from './utils/auth'
 
 // 全局错误抑制 - Skyline 渲染器兼容性处理
 function setupErrorHandlers() {
@@ -51,24 +53,63 @@ App<IAppOption>({
     // 初始化主题
     this.initTheme();
     
-    // 登录(仅在真机或体验版执行,开发环境跳过以避免网络错误)
+    // 微信登录
+    this.performLogin();
+  },
+
+  async performLogin() {
     try {
-      const accountInfo = wx.getAccountInfoSync();
-      if (accountInfo.miniProgram.envVersion !== 'develop') {
-        wx.login({
-          success: res => {
-            console.log('登录 code:', res.code);
-            // 发送 res.code 到后台换取 openId, sessionKey, unionId
-          },
-          fail: err => {
-            console.warn('登录失败(可忽略):', err);
-          }
+      // 获取设备信息用于调试
+      const systemInfo = wx.getSystemInfoSync();
+      console.log('[App] 设备信息:', {
+        platform: systemInfo.platform,
+        system: systemInfo.system,
+        model: systemInfo.model,
+      });
+      
+      const loginResult = await wx.login();
+      console.log('[App] 微信登录 code:', loginResult.code);
+      console.log('[App] code 长度:', loginResult.code.length);
+      
+      // 调用后端登录接口换取 access_token
+      const response = await login({
+        code: loginResult.code,
+      });
+      
+      console.log('[App] 登录响应完整数据:', response);
+      
+      // 保存 token 和用户信息
+      if (response.data) {
+        saveAuth({
+          access_token: response.data.access_token,
+          refresh_token: response.data.refresh_token,
+          user_id: response.data.user_id,
         });
-      } else {
-        console.log('开发环境,跳过微信登录');
+        
+        console.log('[App] 登录成功', {
+          user_id: response.data.user_id,
+          is_new_user: response.data.is_new_user,
+          expires_in: response.data.expires_in,
+        });
+        
+        // 如果是新用户，可以显示欢迎提示
+        if (response.data.is_new_user) {
+          console.log('[App] 欢迎新用户！');
+        }
       }
-    } catch (e) {
-      console.warn('获取环境信息失败,跳过登录:', e);
+      
+    } catch (error: any) {
+      console.error('[App] 登录失败:', error);
+      
+      // 显示友好的错误提示
+      const errorMsg = error?.data?.message || error?.message || '登录失败';
+      wx.showToast({
+        title: errorMsg,
+        icon: 'none',
+        duration: 3000,
+      });
+      
+      // 登录失败不阻塞应用启动,部分功能可能无法使用
     }
   },
 

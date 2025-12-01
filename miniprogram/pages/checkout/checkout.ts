@@ -408,19 +408,29 @@ createPageWithAnalytics({
       return await createOrder(payload);
     } catch (err: any) {
       console.error('创建订单失败:', err);
-      const detail = err?.data?.detail || err?.data?.error?.detail || err?.message;
-      const detailText = typeof detail === 'string' ? detail : JSON.stringify(detail || '');
-      // 处理 guest session 失效，刷新后重试一次
-      if (detailText.toLowerCase().includes('guest session')) {
+      const statusCode = err?.statusCode;
+      const detail = err?.data?.detail || err?.data?.error?.detail || err?.message || '';
+      const detailText = typeof detail === 'string' ? detail : JSON.stringify(detail);
+      
+      console.log('订单创建错误详情 - statusCode:', statusCode, 'detail:', detailText);
+      
+      // 处理 guest session 失效(400/401错误且包含 guest session 相关信息)
+      if ((statusCode === 400 || statusCode === 401) && detailText.toLowerCase().includes('guest')) {
+        console.log('检测到 guest session 失效,尝试重新创建...');
         try {
           const res = await createGuestSession();
           const gid = (res as any)?.data?.guest_session_id || (res as any)?.guest_session_id;
           if (gid) {
             wx.setStorageSync('guest_session_id', gid);
+            console.log('已重新创建 guest_session_id:', gid);
+            
+            // 重新构建 payload,使用最新的 guest_session_id
+            const retryPayload = this.buildOrderPayload();
+            console.log('使用新 session 重试创建订单');
+            return await createOrder(retryPayload);
           }
-          const retryPayload = this.buildOrderPayload();
-          return await createOrder(retryPayload);
         } catch (retryErr) {
+          console.error('重试创建订单失败:', retryErr);
           throw retryErr;
         }
       }
@@ -520,7 +530,10 @@ createPageWithAnalytics({
     const scheduledAt = Array.isArray(timePickerValue) && timePickerValue.length
       ? timePickerValue.join(' ')
       : undefined;
+    // 始终从 storage 获取最新的 guest_session_id
     const guestSession = getStorage<string>('guest_session_id');
+
+    console.log('构建订单 payload - guest_session_id:', guestSession, '商品数量:', items.length);
 
     const payload: OrderRequestPayload = {
       shop_id: shopId || 1,
@@ -530,7 +543,7 @@ createPageWithAnalytics({
       user_phone: userPhone || undefined,
       notes: notes || undefined,
       use_points: false,
-      items: (items || []).map((item: any) => ({
+      items: items.map((item: any) => ({
         product_id: item.product_id,
         quantity: item.quantity || 1,
         selected_specs: (item.selected_specs || []).map((spec: any) => ({

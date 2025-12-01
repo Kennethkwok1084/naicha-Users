@@ -100,7 +100,10 @@ Component({
 
   pageLifetimes: {
     show() {
-      // Skyline 模式下 getTabBar 存在兼容性问题,暂时禁用
+      // 更新 TabBar active 状态
+      if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+        this.getTabBar().updateActive('index');
+      }
     }
   },
 

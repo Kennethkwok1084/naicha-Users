@@ -1,4 +1,152 @@
 <!--pages/profile/profile.wxml-->
 <view class="container">
-  <text>我的</text>
+  <view class="header">
+    <text class="title">我的</text>
+  </view>
+
+  <!-- 用户信息卡片 -->
+  <view class="user-info-card">
+    <view wx:if="{{isLoggedIn}}" class="logged-in">
+      <view class="user-header">
+        <view class="avatar-wrapper" bindtap="updateUserInfo">
+          <image 
+            wx:if="{{userInfo.avatar_url}}"
+            class="user-avatar" 
+            src="{{userInfo.avatar_url}}" 
+            mode="aspectFill"
+          />
+          <t-avatar 
+            wx:else
+            size="120rpx" 
+            icon="user"
+            shape="circle"
+          />
+          <view class="avatar-edit-hint">
+            <t-icon name="edit" size="24rpx" color="#fff" />
+          </view>
+        </view>
+        <view class="user-details">
+          <text class="user-nickname">{{userInfo.nickname || '微信用户'}}</text>
+          <text class="user-id">ID: {{userId}}</text>
+          <view class="phone-info">
+            <text wx:if="{{userInfo.phone}}" class="phone-number">
+              <t-icon name="mobile" size="24rpx" /> {{userInfo.phone}}
+            </text>
+            <button 
+              wx:else
+              class="bind-phone-btn" 
+              open-type="getPhoneNumber" 
+              bindgetphonenumber="bindPhone"
+            >
+              <t-icon name="mobile" size="24rpx" /> 绑定手机号
+            </button>
+          </view>
+          <text class="update-hint">点击头像更新信息</text>
+        </view>
+      </view>
+      <t-button size="small" variant="outline" bindtap="logout">退出登录</t-button>
+    </view>
+    
+    <view wx:else class="logged-out">
+      <view class="avatar-wrapper">
+        <t-avatar 
+          size="100rpx" 
+          icon="user"
+          shape="circle"
+        />
+      </view>
+      <view class="guest-info">
+        <view class="status-warning">
+          <t-icon name="error-circle" size="32rpx" color="#ff976a" />
+          <text class="status-text">未登录</text>
+        </view>
+        <text class="tip">登录后享受更多服务</text>
+      </view>
+      <t-button size="medium" theme="primary" bindtap="reLogin">立即登录</t-button>
+    </view>
+  </view>
+
+  <!-- 集点卡片 (仅登录用户显示) -->
+  <view wx:if="{{isLoggedIn}}" class="stamp-card">
+    <view class="stamp-header">
+      <view class="stamp-title">
+        <t-icon name="star" size="40rpx" color="#ff9500" />
+        <text class="stamp-title-text">集点卡</text>
+      </view>
+      <text class="stamp-rule">满10杯送1杯</text>
+    </view>
+    
+    <view class="stamp-progress">
+      <view class="stamp-info">
+        <text class="stamp-current">{{stampProgress.current}}</text>
+        <text class="stamp-separator">/</text>
+        <text class="stamp-target">{{stampProgress.target}}</text>
+      </view>
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{stampProgress.current / stampProgress.target * 100}}%"></view>
+      </view>
+      <text class="stamp-tip">已累计获得 {{stampProgress.total}} 杯奖励</text>
+    </view>
+  </view>
+
+  <!-- 快捷入口 (仅登录用户显示) -->
+  <view wx:if="{{isLoggedIn}}" class="quick-entry">
+    <view class="entry-item" bindtap="navigateToOrders">
+      <view class="entry-icon-wrapper">
+        <t-icon name="shop" size="48rpx" color="#07c160" />
+      </view>
+      <text class="entry-text">我的订单</text>
+    </view>
+    <view class="entry-item" bindtap="navigateToCoupons">
+      <view class="entry-icon-wrapper">
+        <t-icon name="coupon" size="48rpx" color="#ff976a" />
+        <view wx:if="{{couponCount > 0}}" class="entry-badge">{{couponCount}}</view>
+      </view>
+      <text class="entry-text">优惠券</text>
+    </view>
+    <view class="entry-item">
+      <view class="entry-icon-wrapper">
+        <t-icon name="star" size="48rpx" color="#ff9500" />
+      </view>
+      <text class="entry-text">我的收藏</text>
+    </view>
+    <view class="entry-item" bindtap="contactShop">
+      <view class="entry-icon-wrapper">
+        <t-icon name="service" size="48rpx" color="#576b95" />
+      </view>
+      <text class="entry-text">联系商家</text>
+    </view>
+  </view>
+
+  <!-- 功能区域 -->
+  <view class="function-area">
+    <text class="section-title">更多功能</text>
+    <view class="function-list">
+      <view class="function-item" bindtap="navigateToOrders">
+        <t-icon name="shop" size="40rpx" />
+        <text>我的订单</text>
+        <t-icon name="chevron-right" size="32rpx" color="#999" />
+      </view>
+      <view class="function-item">
+        <t-icon name="location" size="40rpx" />
+        <text>收货地址</text>
+        <t-icon name="chevron-right" size="32rpx" color="#999" />
+      </view>
+      <view class="function-item" bindtap="contactShop">
+        <t-icon name="service" size="40rpx" />
+        <text>联系商家</text>
+        <t-icon name="chevron-right" size="32rpx" color="#999" />
+      </view>
+      <view class="function-item">
+        <t-icon name="help-circle" size="40rpx" />
+        <text>帮助与反馈</text>
+        <t-icon name="chevron-right" size="32rpx" color="#999" />
+      </view>
+      <view class="function-item">
+        <t-icon name="setting" size="40rpx" />
+        <text>设置</text>
+        <t-icon name="chevron-right" size="32rpx" color="#999" />
+      </view>
+    </view>
+  </view>
 </view>

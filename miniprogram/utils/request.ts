@@ -157,10 +157,23 @@ export function request<T = any>(options: RequestOptions): Promise<ApiResponse<T
         }
       },
       fail: (error) => {
-        console.error('请求失败:', error);
+        console.error('[Request] 请求失败:', error);
+        console.error('[Request] 请求 URL:', fullUrl);
+        console.error('[Request] 请求数据:', data);
+        
+        let errorMsg = '网络请求失败';
+        if (error.errMsg) {
+          if (error.errMsg.includes('timeout')) {
+            errorMsg = '请求超时，请检查网络';
+          } else if (error.errMsg.includes('fail')) {
+            errorMsg = '网络连接失败';
+          }
+        }
+        
         wx.showToast({
-          title: '网络请求失败',
-          icon: 'none'
+          title: errorMsg,
+          icon: 'none',
+          duration: 3000,
         });
         reject(error);
       }

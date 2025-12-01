@@ -38,11 +38,11 @@ page {
   flex-direction: column;
 }
 
-.menu-page__skeleton-right > * {
+.menu-page__skeleton-right view {
   margin-bottom: 32rpx;
 }
 
-.menu-page__skeleton-right > *:last-child {
+.menu-page__skeleton-right view:last-child {
   margin-bottom: 0;
 }
 

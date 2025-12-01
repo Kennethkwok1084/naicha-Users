@@ -1,4 +1,14 @@
 {
   "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "navigation-bar": "../../components/navigation-bar/navigation-bar",
+    "t-tabs": "tdesign-miniprogram/tabs/tabs",
+    "t-tab-panel": "tdesign-miniprogram/tab-panel/tab-panel",
+    "t-loading": "tdesign-miniprogram/loading/loading",
+    "t-empty": "tdesign-miniprogram/empty/empty",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-toast": "tdesign-miniprogram/toast/toast",
+    "t-dialog": "tdesign-miniprogram/dialog/dialog",
+    "order-card": "../../components/order-card/order-card"
+  }
 }

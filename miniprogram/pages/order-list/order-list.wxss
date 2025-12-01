@@ -1,8 +1,69 @@
 /* pages/order-list/order-list.wxss */
-.container {
-  padding: 20rpx;
-  /* 为 TabBar 预留空间 */
-  padding-bottom: 120rpx;
-  padding-bottom: calc(120rpx + constant(safe-area-inset-bottom));
+page {
+  height: 100%;
+  background: #f5f5f5;
+}
+
+.order-list-page {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tabs 容器 */
+.tabs-container {
+  flex: none;
+  background: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
+  z-index: 10;
+}
+
+/* 滚动容器 - 占据剩余空间 */
+.scroll-container {
+  flex: 1;
+  height: 0;
+  overflow-y: auto;
+}
+
+/* 加载中 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 100rpx 0;
+  min-height: 50vh;
+}
+
+/* 订单容器 */
+.orders-container {
+  min-height: 100%;
   padding-bottom: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+/* 加载更多 */
+.load-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40rpx 0;
+}
+
+/* 没有更多 */
+.no-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40rpx 0;
+  color: #999;
+  font-size: 24rpx;
+}
+
+/* 空态容器 */
+.empty-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 200rpx 32rpx;
+  min-height: 50vh;
 }

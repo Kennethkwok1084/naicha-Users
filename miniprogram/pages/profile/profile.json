@@ -1,4 +1,10 @@
 {
   "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-badge": "tdesign-miniprogram/badge/badge",
+    "t-avatar": "tdesign-miniprogram/avatar/avatar"
+  },
+  "navigationBarTitleText": "我的"
 }

@@ -1,4 +1,94 @@
-<!--pages/order-list/order-list.wxml-->
-<view class="container">
-  <text>订单列表</text>
+<view class="order-list-page">
+  <!-- 导航栏 -->
+  <navigation-bar 
+    title="订单" 
+    back="{{false}}" 
+    color="#333333" 
+    background="#ffffff"
+  ></navigation-bar>
+  
+  <!-- 顶部 Tabs -->
+  <view class="tabs-container">
+    <t-tabs 
+      value="{{currentTab}}" 
+      bind:change="onTabChange"
+      space-evenly="{{false}}"
+    >
+      <t-tab-panel 
+        wx:for="{{tabs}}" 
+        wx:key="value"
+        label="{{item.label}}" 
+        value="{{item.value}}"
+      />
+    </t-tabs>
+  </view>
+
+  <!-- 订单列表 -->
+  <scroll-view
+    class="scroll-container"
+    scroll-y
+    refresher-enabled
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+    bindscrolltolower="onLoadMore"
+    lower-threshold="100"
+  >
+    <!-- 加载中 -->
+    <block wx:if="{{loading}}">
+      <view class="loading-container">
+        <t-loading theme="circular" size="48rpx" text="加载中..." />
+      </view>
+    </block>
+
+    <!-- 订单列表内容 -->
+    <block wx:else>
+      <view class="orders-container">
+        <!-- 订单卡片列表 -->
+        <block wx:if="{{orders.length > 0}}">
+          <order-card
+            wx:for="{{orders}}"
+            wx:key="order_id"
+            order="{{item}}"
+            bind:tap="onOrderTap"
+            bind:action="onOrderAction"
+          />
+        </block>
+
+        <!-- 加载更多 -->
+        <view class="load-more" wx:if="{{loadingMore}}">
+          <t-loading theme="circular" size="40rpx" text="加载更多..." />
+        </view>
+
+        <!-- 没有更多 -->
+        <view class="no-more" wx:if="{{!hasMore && orders.length > 0}}">
+          <text>没有更多订单了</text>
+        </view>
+
+        <!-- 空态 -->
+        <block wx:if="{{isEmpty}}">
+          <view class="empty-container">
+            <t-empty 
+              icon="{{isGuest ? 'user' : 'order'}}" 
+              description="{{isGuest ? '登录后可查看订单记录' : (currentTab === 'all' ? '还没有订单哦' : '暂无相关订单')}}"
+            >
+              <t-button 
+                wx:if="{{currentTab === 'all'}}"
+                theme="primary" 
+                size="large"
+                bindtap="goToMenu"
+              >
+                {{isGuest ? '去登录' : '去点单'}}
+              </t-button>
+            </t-empty>
+          </view>
+        </block>
+      </view>
+    </block>
+  </scroll-view>
+  
+  <!-- Toast -->
+  <t-toast id="t-toast" />
+
+  <!-- Dialog -->
+  <t-dialog id="t-dialog" />
 </view>
